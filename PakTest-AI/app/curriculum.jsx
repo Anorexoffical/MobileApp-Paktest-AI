@@ -1,488 +1,946 @@
 import { useState } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
-import { C, T, S, R, rs, shared } from "../constants/design";
+import { F } from "../constants/fonts";
 
-// ── Icons ────────────────────────────────────────────────
+const { width, height } = Dimensions.get("window");
+const s = (n) => Math.round((width / 375) * n);
+const isTablet = width >= 768;
+const isSmallPhone = width < 375;
+
+// ── Icons ──────────────────────────────────────────────
 const BackIcon = () => (
-  <Svg width={rs(24)} height={rs(24)} viewBox="0 0 24 24" fill="none">
-    <Path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill={C.text} />
+  <Svg width={s(24)} height={s(24)} viewBox="0 0 24 24" fill="none">
+    <Path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#1d5152" />
   </Svg>
 );
 
 const PlayIcon = () => (
-  <Svg width={rs(16)} height={rs(16)} viewBox="0 0 24 24" fill="none">
-    <Path d="M8 5V19L19 12L8 5Z" fill={C.textInvert} />
+  <Svg width={s(16)} height={s(16)} viewBox="0 0 24 24" fill="none">
+    <Path d="M8 5V19L19 12L8 5Z" fill="#fff" />
   </Svg>
 );
 
 const CheckIcon = () => (
-  <Svg width={rs(14)} height={rs(14)} viewBox="0 0 24 24" fill="none">
-    <Path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill={C.success} />
-  </Svg>
-);
-
-const LockIcon = () => (
-  <Svg width={rs(14)} height={rs(14)} viewBox="0 0 24 24" fill="none">
-    <Path d="M18 8H17V6C17 3.24 14.76 1 12 1S7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17ZM15.1 8H8.9V6C8.9 4.29 10.29 2.9 12 2.9C13.71 2.9 15.1 4.29 15.1 6V8Z" fill={C.textMuted} />
-  </Svg>
-);
-
-const BookIcon = () => (
-  <Svg width={rs(18)} height={rs(18)} viewBox="0 0 24 24" fill="none">
-    <Path d="M19 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM9 4H11V9L10 8.25L9 9V4ZM19 20H6V4H7V13L10 10.75L13 13V4H19V20Z" fill={C.primary} />
-  </Svg>
-);
-
-const VideoIcon = () => (
-  <Svg width={rs(18)} height={rs(18)} viewBox="0 0 24 24" fill="none">
-    <Path d="M17 10.5V7C17 6.45 16.55 6 16 6H4C3.45 6 3 6.45 3 7V17C3 17.55 3.45 18 4 18H16C16.55 18 17 17.55 17 17V13.5L21 17.5V6.5L17 10.5Z" fill={C.primary} />
-  </Svg>
-);
-
-const QuizIcon = () => (
-  <Svg width={rs(18)} height={rs(18)} viewBox="0 0 24 24" fill="none">
-    <Path d="M4 6H2V20C2 21.1 2.9 22 4 22H18V20H4V6ZM20 2H8C6.9 2 6 2.9 6 4V16C6 17.1 6.9 18 8 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H8V4H20V16ZM13 14H15V12H17V10H15V8H13V10H11V12H13V14Z" fill={C.primary} />
+  <Svg width={s(14)} height={s(14)} viewBox="0 0 24 24" fill="none">
+    <Path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="#1d5152" />
   </Svg>
 );
 
 const AIIcon = () => (
-  <Svg width={rs(18)} height={rs(18)} viewBox="0 0 24 24" fill="none">
-    <Path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11C11 9.75 14 10.1 14 8C14 6.9 13.1 6 12 6C10.9 6 10 6.9 10 8H8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8C16 10.5 13 10.75 13 13Z" fill={C.primary} />
+  <Svg width={s(18)} height={s(18)} viewBox="0 0 24 24" fill="none">
+    <Path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11C11 9.75 14 10.1 14 8C14 6.9 13.1 6 12 6C10.9 6 10 6.9 10 8H8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8C16 10.5 13 10.75 13 13Z" fill="#CAB3FF" />
   </Svg>
 );
 
-const StarIcon = ({ filled }) => (
-  <Svg width={rs(14)} height={rs(14)} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"
-      fill={filled ? "#F59E0B" : C.muted}
-    />
+const SparkleIcon = () => (
+  <Svg width={s(14)} height={s(14)} viewBox="0 0 14 14" fill="none">
+    <Path d="M7 0L8.4 5.6L14 7L8.4 8.4L7 14L5.6 8.4L0 7L5.6 5.6L7 0Z" fill="#CAB3FF" opacity="0.8" />
   </Svg>
 );
 
-const ArrowRight = () => (
-  <Svg width={rs(14)} height={rs(14)} viewBox="0 0 24 24" fill="none">
-    <Path d="M9.29 6.71L10.71 5.29L17.41 12L10.71 18.71L9.29 17.29L14.59 12L9.29 6.71Z" fill={C.textInvert} />
+const CloseIcon = () => (
+  <Svg width={s(20)} height={s(20)} viewBox="0 0 24 24" fill="none">
+    <Path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="#1a1a1a" />
   </Svg>
 );
 
-// ── Data ──────────────────────────────────────────────────
-const MODULES = [
+const ReadIcon = () => (
+  <Svg width={s(16)} height={s(16)} viewBox="0 0 24 24" fill="none">
+    <Path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="#1d5152" />
+  </Svg>
+);
+
+const CheckBoxIcon = ({ checked }) => (
+  <Svg width={s(20)} height={s(20)} viewBox="0 0 24 24" fill="none">
+    <Rect x="3" y="3" width="18" height="18" rx="4" stroke={checked ? "#1d5152" : "#d5d0cc"} strokeWidth="2" fill={checked ? "#1d5152" : "none"} />
+    {checked && <Path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />}
+  </Svg>
+);
+
+// ── Data ──────────────────────────────────────────────
+const SUBJECTS = [
   {
-    id: 1,
-    title: "Financial Accounting",
-    lessons: 12,
-    duration: "4h 20m",
-    progress: 100,
-    locked: false,
-    type: "video",
-    topics: ["Double Entry System", "Trial Balance", "Final Accounts", "Bank Reconciliation"],
+    id: "islamyat",
+    name: "Islamyat",
+    icon: "🕌",
+    color: "#1d5152",
+    books: [
+      { id: "islamyat-1", title: "Islamyat for CSS", author: "Dr. Tahir-ul-Qadri", pages: 320, mcqs: 450 },
+      { id: "islamyat-2", title: "Basic Islamic Studies", author: "Prof. Ahmad Khan", pages: 180, mcqs: 250 },
+      { id: "islamyat-3", title: "Seerat-un-Nabi (PBUH)", author: "Dr. Israr Ahmed", pages: 240, mcqs: 300 },
+    ],
   },
   {
-    id: 2,
-    title: "Auditing Principles",
-    lessons: 10,
-    duration: "3h 45m",
-    progress: 60,
-    locked: false,
-    type: "video",
-    topics: ["Types of Audit", "Internal Controls", "Auditing Standards (ISA)", "Audit Reports"],
+    id: "gk",
+    name: "General Knowledge",
+    icon: "🌍",
+    color: "#CAB3FF",
+    books: [
+      { id: "gk-1", title: "World Geography", author: "Majid Hussain", pages: 400, mcqs: 500 },
+      { id: "gk-2", title: "Current Affairs 2024", author: "CSS Team", pages: 280, mcqs: 350 },
+      { id: "gk-3", title: "Everyday Science", author: "Dr. M. Ali", pages: 200, mcqs: 280 },
+    ],
   },
   {
-    id: 3,
-    title: "Cost & Management Accounting",
-    lessons: 8,
-    duration: "3h 10m",
-    progress: 0,
-    locked: false,
-    type: "book",
-    topics: ["Job Costing", "Process Costing", "Marginal Costing", "Standard Costing"],
+    id: "history",
+    name: "History",
+    icon: "📜",
+    color: "#0f2022",
+    books: [
+      { id: "history-1", title: "Pakistan History", author: "Prof. S.M. Zafar", pages: 350, mcqs: 400 },
+      { id: "history-2", title: "World History", author: "Dr. A. Malik", pages: 300, mcqs: 380 },
+    ],
   },
   {
-    id: 4,
-    title: "Company Law & Taxation",
-    lessons: 9,
-    duration: "3h 30m",
-    progress: 0,
-    locked: true,
-    type: "book",
-    topics: ["Companies Act 2017", "Income Tax Ordinance", "Sales Tax", "FBR Procedures"],
+    id: "english",
+    name: "English",
+    icon: "📚",
+    color: "#8B5CF6",
+    books: [
+      { id: "english-1", title: "English Grammar", author: "Wren & Martin", pages: 450, mcqs: 550 },
+      { id: "english-2", title: "CSS English Essay", author: "Prof. Hassan", pages: 200, mcqs: 220 },
+    ],
   },
   {
-    id: 5,
-    title: "General Knowledge & Pakistan Affairs",
-    lessons: 14,
-    duration: "5h 00m",
-    progress: 0,
-    locked: true,
-    type: "quiz",
-    topics: ["Constitution 1973", "Geography", "Current Affairs", "Pakistan Studies"],
+    id: "urdu",
+    name: "Urdu",
+    icon: "📖",
+    color: "#10B981",
+    books: [
+      { id: "urdu-1", title: "Urdu Grammar", author: "Dr. F. Malik", pages: 250, mcqs: 300 },
+      { id: "urdu-2", title: "Urdu Adab", author: "Prof. N. Ahmad", pages: 300, mcqs: 350 },
+    ],
   },
   {
-    id: 6,
-    title: "English Grammar & Comprehension",
-    lessons: 7,
-    duration: "2h 30m",
-    progress: 0,
-    locked: true,
-    type: "quiz",
-    topics: ["Tenses & Modals", "Sentence Correction", "Comprehension Passages", "Vocabulary"],
+    id: "pakstudy",
+    name: "Pakistan Studies",
+    icon: "🇵🇰",
+    color: "#F59E0B",
+    books: [
+      { id: "pakstudy-1", title: "Pakistan Studies", author: "Dr. Safdar", pages: 380, mcqs: 420 },
+      { id: "pakstudy-2", title: "Constitution of Pakistan", author: "Hamid Khan", pages: 280, mcqs: 320 },
+    ],
   },
 ];
 
-const INSTRUCTORS = [
-  { name: "Prof. Kashif Ali", role: "CA, ACCA · 12 Yrs Exp.", rating: 5 },
-  { name: "Ms. Sara Noor", role: "M.Ed · English Specialist", rating: 4 },
-];
-
-const STATS = [
-  { label: "Total Lessons", value: "60" },
-  { label: "Total Duration", value: "22h" },
-  { label: "Avg. Score Boost", value: "+34%" },
-  { label: "Enrolled", value: "8.4k" },
-];
-
-// ── Sub-components ────────────────────────────────────────
-function ModuleTypeIcon({ type }) {
-  if (type === "video") return <VideoIcon />;
-  if (type === "quiz") return <QuizIcon />;
-  return <BookIcon />;
-}
-
-function ProgressBar({ progress }) {
-  return (
-    <View style={styles.progressBg}>
-      <View style={[styles.progressFill, { width: `${progress}%` }]} />
-    </View>
-  );
-}
-
-function ModuleCard({ mod, index }) {
-  const done = mod.progress === 100;
-  const inProgress = mod.progress > 0 && mod.progress < 100;
-
-  return (
-    <View style={[styles.moduleCard, mod.locked && styles.moduleCardLocked]}>
-      {inProgress && <View style={styles.moduleActiveBorder} />}
-
-      <View style={styles.moduleHeader}>
-        <View style={styles.moduleNumBox}>
-          {done
-            ? <CheckIcon />
-            : <Text style={styles.moduleNum}>{String(index + 1).padStart(2, "0")}</Text>}
-        </View>
-        <View style={styles.moduleHeaderMid}>
-          <Text style={styles.moduleTitle} numberOfLines={1}>{mod.title}</Text>
-          <Text style={styles.moduleMeta}>{mod.lessons} lessons · {mod.duration}</Text>
-        </View>
-        <View style={styles.moduleTypeBox}>
-          <ModuleTypeIcon type={mod.type} />
-        </View>
-        {mod.locked && <LockIcon />}
-      </View>
-
-      {!mod.locked && (
-        <>
-          <View style={styles.topicsWrap}>
-            {mod.topics.map((t) => (
-              <View key={t} style={styles.topicChip}>
-                <Text style={styles.topicText}>{t}</Text>
-              </View>
-            ))}
-          </View>
-
-          {mod.progress > 0 && (
-            <View style={styles.progressRow}>
-              <ProgressBar progress={mod.progress} />
-              <Text style={styles.progressPct}>{mod.progress}%</Text>
-            </View>
-          )}
-
-          <TouchableOpacity style={[styles.moduleBtn, done && styles.moduleBtnDone]} activeOpacity={0.8}>
-            <PlayIcon />
-            <Text style={styles.moduleBtnText}>
-              {done ? "Review Module" : inProgress ? "Continue" : "Start Module"}
-            </Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-      {mod.locked && (
-        <Text style={styles.lockedMsg}>Unlock after completing previous module</Text>
-      )}
-    </View>
-  );
-}
-
-// ── Main Screen ───────────────────────────────────────────
+// ── Main Component ──────────────────────────────────────
 export default function Curriculum() {
   const { title } = useLocalSearchParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("modules");
+  const [expandedSubject, setExpandedSubject] = useState(null);
+  const [selectedBooks, setSelectedBooks] = useState([]);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [currentSubject, setCurrentSubject] = useState(null);
 
-  const tabs = ["modules", "instructors", "overview"];
+  const toggleSubject = (subjectId) => {
+    setExpandedSubject(expandedSubject === subjectId ? null : subjectId);
+    setSelectedBooks([]);
+  };
+
+  const toggleBookSelection = (bookId) => {
+    setSelectedBooks(prev =>
+      prev.includes(bookId)
+        ? prev.filter(id => id !== bookId)
+        : [...prev, bookId]
+    );
+  };
+
+  const handleAIQuiz = (subject) => {
+    if (selectedBooks.length === 0) {
+      alert("Please select at least one book for the AI test.");
+      return;
+    }
+    setCurrentSubject(subject);
+    setShowAIModal(true);
+  };
+
+  const handleReadBook = (book) => {
+    router.push({
+      pathname: "/bookreader",
+      params: {
+        bookId: book.id,
+        title: book.title,
+        author: book.author,
+        pages: book.pages.toString(),
+      },
+    });
+  };
+
+  const handleSingleBookAI = (subject, book) => {
+    setCurrentSubject(subject);
+    setSelectedBooks([book.id]);
+    setShowAIModal(true);
+  };
+
+  const startAITest = () => {
+    if (!currentSubject) {
+      alert("Please select a subject first.");
+      return;
+    }
+    
+    const books = currentSubject.books.filter(b => selectedBooks.includes(b.id));
+    if (books.length === 0) {
+      alert("Please select at least one book.");
+      return;
+    }
+    
+    setShowAIModal(false);
+    router.push({
+      pathname: "/Test",
+      params: {
+        subject: currentSubject.name,
+        books: books.map(b => b.title).join(", "),
+        totalMCQs: books.reduce((sum, b) => sum + b.mcqs, 0),
+        bookIds: books.map(b => b.id).join(","),
+      },
+    });
+  };
+
+  const SubjectCard = ({ subject }) => {
+    const isExpanded = expandedSubject === subject.id;
+    const books = subject.books;
+
+    return (
+      <View style={styles.subjectWrapper}>
+        <TouchableOpacity
+          style={[styles.subjectHeader, isExpanded && styles.subjectHeaderExpanded]}
+          activeOpacity={0.8}
+          onPress={() => toggleSubject(subject.id)}
+        >
+          <View style={styles.subjectHeaderLeft}>
+            <View style={[styles.subjectIconBox, { backgroundColor: subject.color + '15' }]}>
+              <Text style={styles.subjectIcon}>{subject.icon}</Text>
+            </View>
+            <View>
+              <Text style={styles.subjectName}>{subject.name}</Text>
+              <Text style={styles.subjectBookCount}>{books.length} Books</Text>
+            </View>
+          </View>
+          <View style={[styles.subjectExpand, isExpanded && styles.subjectExpandActive]}>
+            <Text style={styles.subjectExpandText}>{isExpanded ? '−' : '+'}</Text>
+          </View>
+        </TouchableOpacity>
+
+        {isExpanded && (
+          <View style={styles.booksContainer}>
+            {books.map((book) => (
+              <View key={book.id} style={styles.bookItem}>
+                <TouchableOpacity
+                  style={styles.bookItemLeft}
+                  onPress={() => toggleBookSelection(book.id)}
+                  activeOpacity={0.7}
+                >
+                  <CheckBoxIcon checked={selectedBooks.includes(book.id)} />
+                  <View style={styles.bookInfo}>
+                    <Text style={styles.bookTitle}>{book.title}</Text>
+                    <Text style={styles.bookAuthor}>{book.author}</Text>
+                    <View style={styles.bookMeta}>
+                      <Text style={styles.bookMetaText}>{book.pages} pages</Text>
+                      <Text style={styles.bookMetaDot}>•</Text>
+                      <Text style={styles.bookMetaText}>{book.mcqs} MCQs</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.bookActions}>
+                  <TouchableOpacity
+                    style={styles.readBtn}
+                    onPress={() => handleReadBook(book)}
+                    activeOpacity={0.7}
+                  >
+                    <ReadIcon />
+                    <Text style={styles.readBtnText}>Read</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.aiBtn}
+                    onPress={() => handleSingleBookAI(subject, book)}
+                    activeOpacity={0.7}
+                  >
+                    <SparkleIcon />
+                    <Text style={styles.aiBtnText}>AI MCQs</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+
+            {books.length > 0 && (
+              <TouchableOpacity
+                style={styles.aiAllBtn}
+                onPress={() => handleAIQuiz(subject)}
+                activeOpacity={0.8}
+              >
+                <AIIcon />
+                <Text style={styles.aiAllBtnText}>
+                  AI Test on Selected Books ({selectedBooks.length})
+                </Text>
+                <Text style={styles.aiAllSub}>
+                  {selectedBooks.length > 0
+                    ? `${selectedBooks.reduce((sum, id) => sum + books.find(b => b.id === id)?.mcqs || 0, 0)} MCQs`
+                    : 'Select books above'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  // Get selected books data for modal
+  const getSelectedBooksData = () => {
+    if (!currentSubject) return [];
+    return currentSubject.books.filter(b => selectedBooks.includes(b.id));
+  };
+
+  const selectedBooksData = getSelectedBooksData();
+  const totalMCQs = selectedBooksData.reduce((sum, b) => sum + b.mcqs, 0);
 
   return (
-    <SafeAreaView style={shared.safe} edges={["top"]}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* Header */}
-      <View style={shared.header}>
-        <TouchableOpacity onPress={() => router.back()} style={shared.backBtn}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <BackIcon />
         </TouchableOpacity>
-        <Text style={shared.headerTitle} numberOfLines={1}>
+        <Text style={styles.headerTitle} numberOfLines={1}>
           {title ? `${title} · Curriculum` : "Curriculum"}
         </Text>
-        <View style={{ width: rs(40) }} />
+        <View style={{ width: s(40) }} />
       </View>
 
-      <ScrollView style={shared.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Hero */}
-        <View style={shared.heroCard}>
-          <View style={shared.heroBubble1} />
-          <View style={shared.heroBubble2} />
-          <View style={shared.chip}>
-            <Text style={shared.chipText}>PREMIUM CURRICULUM</Text>
+        <View style={styles.hero}>
+          <View style={styles.heroBubble1} />
+          <View style={styles.heroBubble2} />
+          <View style={styles.heroChip}>
+            <SparkleIcon />
+            <Text style={styles.heroChipText}>PREMIUM CURRICULUM</Text>
           </View>
           <Text style={styles.heroTitle}>Comprehensive{"\n"}Prep Courses</Text>
           <Text style={styles.heroDesc}>
-            Video lectures, PDF notes & chapter-wise tests covering the full FPSC syllabus — built for exam success.
+            Select a subject, browse books, and generate AI MCQs from specific books or combine multiple books.
           </Text>
         </View>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
-          {STATS.map((s) => (
-            <View key={s.label} style={styles.statBox}>
-              <Text style={styles.statValue}>{s.value}</Text>
-              <Text style={styles.statLabel}>{s.label}</Text>
-            </View>
-          ))}
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>6</Text>
+            <Text style={styles.statLabel}>Subjects</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>16</Text>
+            <Text style={styles.statLabel}>Books</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>4.2k+</Text>
+            <Text style={styles.statLabel}>MCQs</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>AI</Text>
+            <Text style={styles.statLabel}>Powered</Text>
+          </View>
         </View>
 
-        {/* Tabs */}
-        <View style={styles.tabsBar}>
-          {tabs.map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.tab, activeTab === t && styles.tabActive]}
-              onPress={() => setActiveTab(t)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, activeTab === t && styles.tabTextActive]}>
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {/* Subjects List */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Select a Subject</Text>
+          <Text style={styles.sectionSub}>Tap to expand and browse books</Text>
+
+          <View style={styles.subjectsList}>
+            {SUBJECTS.map((subject) => (
+              <SubjectCard key={subject.id} subject={subject} />
+            ))}
+          </View>
         </View>
-
-        {/* ── MODULES TAB ── */}
-        {activeTab === "modules" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Course Modules</Text>
-            <Text style={styles.sectionSub}>{MODULES.length} modules · Complete in order</Text>
-            {MODULES.map((mod, i) => (
-              <ModuleCard key={mod.id} mod={mod} index={i} />
-            ))}
-          </View>
-        )}
-
-        {/* ── INSTRUCTORS TAB ── */}
-        {activeTab === "instructors" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Meet Your Instructors</Text>
-            {INSTRUCTORS.map((inst) => (
-              <View key={inst.name} style={styles.instructorCard}>
-                <View style={styles.instructorAvatar}>
-                  <Text style={styles.instructorInitial}>{inst.name[0]}</Text>
-                </View>
-                <View style={styles.instructorInfo}>
-                  <Text style={styles.instructorName}>{inst.name}</Text>
-                  <Text style={styles.instructorRole}>{inst.role}</Text>
-                  <View style={styles.starsRow}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <StarIcon key={i} filled={i <= inst.rating} />
-                    ))}
-                  </View>
-                </View>
-              </View>
-            ))}
-
-            {/* AI Tip */}
-            <View style={styles.aiCard}>
-              <View style={styles.aiCardHeader}>
-                <AIIcon />
-                <Text style={styles.aiCardLabel}>AI INSIGHTS</Text>
-              </View>
-              <Text style={styles.aiCardTitle}>Personalised Learning Path</Text>
-              <Text style={styles.aiCardDesc}>
-                Based on your performance, our AI recommends starting with Auditing Principles to address your 42% accuracy gap before moving to Taxation.
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* ── OVERVIEW TAB ── */}
-        {activeTab === "overview" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionHeading}>What You'll Learn</Text>
-
-            {[
-              "Full FPSC/PPSC syllabus coverage with chapter-wise breakdowns",
-              "Practice MCQs aligned to past papers from 2015–2024",
-              "AI-driven weakness detection and targeted recommendations",
-              "PDF notes downloadable for offline revision",
-              "Mock tests timed exactly like real exam conditions",
-            ].map((item, i) => (
-              <View key={i} style={styles.outcomeRow}>
-                <CheckIcon />
-                <Text style={styles.outcomeText}>{item}</Text>
-              </View>
-            ))}
-
-            <View style={styles.divider} />
-            <Text style={styles.sectionHeading}>Requirements</Text>
-            {[
-              "Intermediate or equivalent qualification",
-              "Basic understanding of accounting principles is a plus",
-              "Access to a smartphone or tablet",
-            ].map((item, i) => (
-              <View key={i} style={styles.outcomeRow}>
-                <View style={styles.bullet} />
-                <Text style={styles.outcomeText}>{item}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* CTA */}
-        <TouchableOpacity style={styles.ctaBtn} activeOpacity={0.8}>
-          <Text style={styles.ctaBtnText}>Enroll Now — Free</Text>
-          <ArrowRight />
-        </TouchableOpacity>
-
       </ScrollView>
+
+      {/* AI Quiz Modal */}
+      <Modal
+        visible={showAIModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAIModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.aiModalContent}>
+            <View style={styles.aiModalHeader}>
+              <View style={styles.aiModalIcon}>
+                <AIIcon />
+              </View>
+              <TouchableOpacity onPress={() => setShowAIModal(false)} style={styles.aiModalClose}>
+                <CloseIcon />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.aiModalTitle}>AI MCQs Ready!</Text>
+            <Text style={styles.aiModalSub}>
+              {currentSubject?.name || 'Subject'} • {selectedBooks.length} book{selectedBooks.length > 1 ? 's' : ''} selected
+            </Text>
+
+            <View style={styles.aiModalStats}>
+              <View style={styles.aiModalStat}>
+                <Text style={styles.aiModalStatValue}>{totalMCQs}</Text>
+                <Text style={styles.aiModalStatLabel}>Total MCQs</Text>
+              </View>
+              <View style={styles.aiModalStat}>
+                <Text style={styles.aiModalStatValue}>30 min</Text>
+                <Text style={styles.aiModalStatLabel}>Time Limit</Text>
+              </View>
+              <View style={styles.aiModalStat}>
+                <Text style={styles.aiModalStatValue}>AI</Text>
+                <Text style={styles.aiModalStatLabel}>Generated</Text>
+              </View>
+            </View>
+
+            <View style={styles.aiModalBooks}>
+              <Text style={styles.aiModalBooksTitle}>Selected Books:</Text>
+              {selectedBooksData.length > 0 ? (
+                selectedBooksData.map((book) => (
+                  <View key={book.id} style={styles.aiModalBookItem}>
+                    <CheckIcon />
+                    <Text style={styles.aiModalBookText}>{book.title}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.aiModalEmptyText}>No books selected</Text>
+              )}
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.aiModalStartBtn, selectedBooksData.length === 0 && styles.aiModalStartBtnDisabled]} 
+              onPress={startAITest}
+              disabled={selectedBooksData.length === 0}
+            >
+              <PlayIcon />
+              <Text style={styles.aiModalStartBtnText}>Start AI Quiz</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.aiModalCancel} onPress={() => setShowAIModal(false)}>
+              <Text style={styles.aiModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────
+// ── Fully Responsive Styles ─────────────────────────────
 const styles = StyleSheet.create({
-  scrollContent: { padding: S.base, gap: S.md, paddingBottom: rs(40) },
+  safe: { 
+    flex: 1, 
+    backgroundColor: "#f9f5ee" 
+  },
+  scroll: { 
+    flex: 1 
+  },
+  scrollContent: { 
+    padding: s(16), 
+    gap: s(16), 
+    paddingBottom: s(40),
+    maxWidth: isTablet ? 600 : '100%',
+    alignSelf: 'center',
+    width: '100%',
+  },
+
+  // Header
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: s(16),
+    paddingVertical: s(isTablet ? 16 : 12),
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e3e1",
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  backBtn: { 
+    width: s(44), 
+    height: s(44), 
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitle: { 
+    flex: 1, 
+    fontSize: s(isTablet ? 20 : 17), 
+    fontFamily: F.semiBold, 
+    color: "#1a1a1a", 
+    textAlign: "center",
+  },
 
   // Hero
-  heroTitle: { ...T.display, color: C.textInvert },
-  heroDesc:  { ...T.body, color: C.textDim },
+  hero: {
+    backgroundColor: "#1d5152",
+    borderRadius: s(16),
+    padding: s(isTablet ? 32 : 24),
+    overflow: "hidden",
+    gap: s(10),
+    shadowColor: "#1d5152",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  heroBubble1: {
+    position: "absolute",
+    right: s(-40),
+    top: s(-40),
+    width: s(180),
+    height: s(180),
+    borderRadius: s(90),
+    backgroundColor: "#CAB3FF",
+    opacity: 0.08,
+  },
+  heroBubble2: {
+    position: "absolute",
+    right: s(60),
+    bottom: s(-20),
+    width: s(120),
+    height: s(120),
+    borderRadius: s(60),
+    backgroundColor: "#CAB3FF",
+    opacity: 0.12,
+  },
+  heroChip: {
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    alignItems: "center",
+    gap: s(6),
+    backgroundColor: "rgba(202, 179, 255, 0.2)",
+    borderRadius: 999,
+    paddingHorizontal: s(12),
+    paddingVertical: s(5),
+    borderWidth: 1,
+    borderColor: "rgba(202, 179, 255, 0.3)",
+  },
+  heroChipText: { 
+    color: "#fff", 
+    fontSize: s(isSmallPhone ? 8 : 10), 
+    fontFamily: F.bold, 
+    letterSpacing: 0.6 
+  },
+  heroTitle: { 
+    color: "#fff", 
+    fontSize: s(isTablet ? 32 : isSmallPhone ? 20 : 24), 
+    fontFamily: F.display, 
+    lineHeight: s(isTablet ? 40 : isSmallPhone ? 28 : 32) 
+  },
+  heroDesc: { 
+    color: "rgba(255,255,255,0.8)", 
+    fontSize: s(isTablet ? 15 : isSmallPhone ? 11 : 13), 
+    fontFamily: F.regular, 
+    lineHeight: s(isTablet ? 24 : isSmallPhone ? 18 : 20) 
+  },
 
   // Stats
   statsRow: {
-    flexDirection: "row", backgroundColor: C.surface,
-    borderRadius: R.lg, borderWidth: 1, borderColor: C.border,
-    overflow: "hidden",
+    flexDirection: "row",
+    backgroundColor: "#ffffff",
+    borderRadius: s(16),
+    borderWidth: 1,
+    borderColor: "#e5e3e1",
+    paddingVertical: s(isTablet ? 20 : 16),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    flexWrap: 'wrap',
   },
-  statBox: {
-    flex: 1, alignItems: "center", paddingVertical: S.md,
-    borderRightWidth: 1, borderRightColor: C.borderLight,
+  statBox: { 
+    flex: 1, 
+    alignItems: "center",
+    minWidth: isSmallPhone ? '25%' : 'auto',
   },
-  statValue: { ...T.heading, color: C.text },
-  statLabel: { ...T.overline, color: C.textMuted, marginTop: rs(2), textTransform: "uppercase" },
-
-  // Tabs
-  tabsBar: {
-    flexDirection: "row", borderBottomWidth: 1, borderBottomColor: C.borderLight, gap: S.lg,
+  statDivider: { 
+    width: 1, 
+    height: s(isTablet ? 40 : 30), 
+    backgroundColor: "#e5e3e1" 
   },
-  tab: { paddingBottom: rs(10), borderBottomWidth: 2, borderBottomColor: "transparent" },
-  tabActive: { borderBottomColor: C.text },
-  tabText: { ...T.label, color: C.textMuted, textTransform: "capitalize" },
-  tabTextActive: { color: C.text, fontWeight: "700" },
+  statValue: { 
+    fontSize: s(isTablet ? 22 : isSmallPhone ? 14 : 18), 
+    fontFamily: F.bold, 
+    color: "#1a1a1a" 
+  },
+  statLabel: { 
+    fontSize: s(isTablet ? 12 : isSmallPhone ? 8 : 10), 
+    fontFamily: F.regular, 
+    color: "#6b7280", 
+    marginTop: s(2) 
+  },
 
   // Section
-  section: { gap: S.md },
-  sectionHeading: { ...T.title, color: C.text },
-  sectionSub:     { ...T.body, color: C.textSub },
+  section: { 
+    gap: s(isTablet ? 12 : 8) 
+  },
+  sectionTitle: { 
+    fontSize: s(isTablet ? 22 : 18), 
+    fontFamily: F.bold, 
+    color: "#1a1a1a" 
+  },
+  sectionSub: { 
+    fontSize: s(isTablet ? 15 : 13), 
+    fontFamily: F.regular, 
+    color: "#6b7280" 
+  },
 
-  // Module Card
-  moduleCard: {
-    backgroundColor: C.surface, borderRadius: R.lg,
-    borderWidth: 1, borderColor: C.border,
-    padding: S.lg, gap: S.sm, overflow: "hidden",
+  subjectsList: { 
+    gap: s(10), 
+    marginTop: s(8) 
   },
-  moduleCardLocked: { backgroundColor: C.subtle, borderColor: C.borderLight },
-  moduleActiveBorder: {
-    position: "absolute", left: 0, top: 0, bottom: 0,
-    width: rs(4), backgroundColor: C.primary,
-  },
-  moduleHeader:    { flexDirection: "row", alignItems: "center", gap: S.sm },
-  moduleNumBox: {
-    width: rs(32), height: rs(32), borderRadius: R.sm,
-    backgroundColor: C.subtle, justifyContent: "center", alignItems: "center",
-  },
-  moduleNum:       { ...T.label, fontWeight: "700", color: C.textSub },
-  moduleHeaderMid: { flex: 1 },
-  moduleTitle:     { ...T.title, color: C.text },
-  moduleMeta:      { ...T.caption, color: C.textMuted, marginTop: rs(2) },
-  moduleTypeBox: {
-    width: rs(32), height: rs(32), borderRadius: R.sm,
-    backgroundColor: C.primaryLight, justifyContent: "center", alignItems: "center",
-  },
-  topicsWrap:  { flexDirection: "row", flexWrap: "wrap", gap: S.xs },
-  topicChip:   { backgroundColor: C.subtle, borderRadius: R.pill, paddingHorizontal: rs(10), paddingVertical: rs(4) },
-  topicText:   { ...T.caption, color: C.textSub },
-  progressRow: { flexDirection: "row", alignItems: "center", gap: S.sm },
-  progressBg:  { flex: 1, height: rs(6), backgroundColor: C.muted, borderRadius: R.pill },
-  progressFill: { height: rs(6), backgroundColor: C.primary, borderRadius: R.pill },
-  progressPct: { ...T.caption, fontWeight: "700", color: C.text, width: rs(32), textAlign: "right" },
-  moduleBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: S.sm, backgroundColor: C.primary,
-    borderRadius: R.md, paddingVertical: rs(12),
-  },
-  moduleBtnDone:   { backgroundColor: C.success },
-  moduleBtnText:   { ...T.label, color: C.textInvert, fontWeight: "600" },
-  lockedMsg:       { ...T.caption, color: C.textMuted, fontStyle: "italic" },
 
-  // Instructor
-  instructorCard: {
-    flexDirection: "row", alignItems: "center", gap: S.md,
-    backgroundColor: C.surface, borderRadius: R.lg,
-    borderWidth: 1, borderColor: C.border, padding: S.lg,
+  // Subject Card
+  subjectWrapper: {
+    backgroundColor: "#ffffff",
+    borderRadius: s(16),
+    borderWidth: 1,
+    borderColor: "#e5e3e1",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  instructorAvatar: {
-    width: rs(52), height: rs(52), borderRadius: rs(26),
-    backgroundColor: C.dark, justifyContent: "center", alignItems: "center",
+  subjectHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: s(isTablet ? 20 : 16),
+    backgroundColor: "#ffffff",
   },
-  instructorInitial: { ...T.heading, color: C.accent },
-  instructorInfo:    { flex: 1, gap: rs(3) },
-  instructorName:    { ...T.title, color: C.text },
-  instructorRole:    { ...T.body, color: C.textSub },
-  starsRow:          { flexDirection: "row", gap: rs(3), marginTop: rs(2) },
+  subjectHeaderExpanded: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#f9f5ee",
+  },
+  subjectHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: s(12),
+    flex: 1,
+  },
+  subjectIconBox: {
+    width: s(isTablet ? 52 : 44),
+    height: s(isTablet ? 52 : 44),
+    borderRadius: s(12),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  subjectIcon: { 
+    fontSize: s(isTablet ? 28 : 22) 
+  },
+  subjectName: { 
+    fontSize: s(isTablet ? 18 : 15), 
+    fontFamily: F.bold, 
+    color: "#1a1a1a" 
+  },
+  subjectBookCount: { 
+    fontSize: s(isTablet ? 13 : 11), 
+    fontFamily: F.regular, 
+    color: "#6b7280" 
+  },
+  subjectExpand: {
+    width: s(isTablet ? 32 : 28),
+    height: s(isTablet ? 32 : 28),
+    borderRadius: s(isTablet ? 16 : 14),
+    backgroundColor: "#f9f5ee",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e5e3e1",
+  },
+  subjectExpandActive: {
+    backgroundColor: "#1d5152",
+    borderColor: "#1d5152",
+  },
+  subjectExpandText: {
+    fontSize: s(isTablet ? 20 : 18),
+    fontFamily: F.bold,
+    color: "#1a1a1a",
+  },
 
-  // AI Card
-  aiCard: {
-    backgroundColor: C.primaryLight, borderRadius: R.lg,
-    borderWidth: 1, borderColor: `${C.primary}33`, padding: S.lg, gap: S.sm,
+  // Books Container
+  booksContainer: {
+    padding: s(isTablet ? 16 : 12),
+    gap: s(10),
+    backgroundColor: "#f9f5ee",
   },
-  aiCardHeader: { flexDirection: "row", alignItems: "center", gap: S.xs },
-  aiCardLabel:  { ...T.overline, color: C.primary },
-  aiCardTitle:  { ...T.title, color: C.primaryDark },
-  aiCardDesc:   { ...T.body, color: C.primaryDark },
-
-  // Overview
-  outcomeRow: { flexDirection: "row", alignItems: "flex-start", gap: S.sm },
-  outcomeText: { ...T.body, color: C.textSub, flex: 1 },
-  bullet: { width: rs(6), height: rs(6), borderRadius: rs(3), backgroundColor: C.textMuted, marginTop: rs(7) },
-  divider: { height: 1, backgroundColor: C.borderLight },
-
-  // CTA
-  ctaBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: S.sm, backgroundColor: C.dark,
-    borderRadius: R.lg, paddingVertical: rs(16),
+  bookItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#ffffff",
+    borderRadius: s(12),
+    padding: s(isTablet ? 14 : 12),
+    borderWidth: 1,
+    borderColor: "#e5e3e1",
+    flexWrap: 'wrap',
+    gap: s(8),
   },
-  ctaBtnText: { ...T.sub, color: C.textInvert, fontWeight: "700" },
+  bookItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: s(10),
+    flex: 1,
+    minWidth: s(120),
+  },
+  bookInfo: { 
+    flex: 1,
+    minWidth: s(80),
+  },
+  bookTitle: { 
+    fontSize: s(isTablet ? 16 : 14), 
+    fontFamily: F.semiBold, 
+    color: "#1a1a1a" 
+  },
+  bookAuthor: { 
+    fontSize: s(isTablet ? 13 : 11), 
+    fontFamily: F.regular, 
+    color: "#6b7280" 
+  },
+  bookMeta: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    gap: s(4), 
+    marginTop: s(2),
+    flexWrap: 'wrap',
+  },
+  bookMetaText: { 
+    fontSize: s(isTablet ? 12 : 10), 
+    fontFamily: F.regular, 
+    color: "#6b7280" 
+  },
+  bookMetaDot: { 
+    fontSize: s(isTablet ? 12 : 10), 
+    color: "#6b7280" 
+  },
+
+  // Book Actions
+  bookActions: {
+    flexDirection: "row",
+    gap: s(6),
+    flexWrap: 'wrap',
+  },
+  readBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: s(4),
+    backgroundColor: "#f9f5ee",
+    borderRadius: s(8),
+    paddingHorizontal: s(10),
+    paddingVertical: s(6),
+    borderWidth: 1,
+    borderColor: "#e5e3e1",
+  },
+  readBtnText: { 
+    fontSize: s(isTablet ? 13 : 11), 
+    fontFamily: F.semiBold, 
+    color: "#1d5152" 
+  },
+  aiBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: s(4),
+    backgroundColor: "#CAB3FF",
+    borderRadius: s(8),
+    paddingHorizontal: s(10),
+    paddingVertical: s(6),
+  },
+  aiBtnText: { 
+    fontSize: s(isTablet ? 13 : 11), 
+    fontFamily: F.semiBold, 
+    color: "#1a1a1a" 
+  },
+
+  // AI All Button
+  aiAllBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: s(8),
+    backgroundColor: "#1d5152",
+    borderRadius: s(12),
+    padding: s(isTablet ? 16 : 14),
+    marginTop: s(4),
+    shadowColor: "#1d5152",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    flexWrap: 'wrap',
+  },
+  aiAllBtnText: { 
+    fontSize: s(isTablet ? 16 : 14), 
+    fontFamily: F.semiBold, 
+    color: "#ffffff", 
+    flex: 1,
+    minWidth: s(100),
+  },
+  aiAllSub: { 
+    fontSize: s(isTablet ? 13 : 11), 
+    fontFamily: F.regular, 
+    color: "rgba(255,255,255,0.7)" 
+  },
+
+  // AI Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: s(16),
+  },
+  aiModalContent: {
+    backgroundColor: "#ffffff",
+    borderRadius: s(24),
+    padding: s(isTablet ? 32 : 24),
+    width: isTablet ? s(500) : (width - s(40)),
+    maxWidth: s(500),
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  aiModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: s(12),
+  },
+  aiModalIcon: {
+    width: s(48),
+    height: s(48),
+    borderRadius: s(14),
+    backgroundColor: "#f5f0ff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e5d9ff",
+  },
+  aiModalClose: { 
+    padding: s(4) 
+  },
+  aiModalTitle: { 
+    fontSize: s(isTablet ? 26 : 22), 
+    fontFamily: F.display, 
+    color: "#1a1a1a" 
+  },
+  aiModalSub: { 
+    fontSize: s(isTablet ? 16 : 14), 
+    fontFamily: F.regular, 
+    color: "#6b7280", 
+    marginBottom: s(16) 
+  },
+
+  aiModalStats: {
+    flexDirection: "row",
+    backgroundColor: "#f9f5ee",
+    borderRadius: s(12),
+    padding: s(isTablet ? 16 : 12),
+    gap: s(12),
+    marginBottom: s(16),
+    borderWidth: 1,
+    borderColor: "#e5e3e1",
+    flexWrap: 'wrap',
+  },
+  aiModalStat: { 
+    flex: 1, 
+    alignItems: "center",
+    minWidth: s(60),
+  },
+  aiModalStatValue: { 
+    fontSize: s(isTablet ? 20 : 18), 
+    fontFamily: F.bold, 
+    color: "#1a1a1a" 
+  },
+  aiModalStatLabel: { 
+    fontSize: s(isTablet ? 12 : 10), 
+    fontFamily: F.regular, 
+    color: "#6b7280", 
+    marginTop: s(2) 
+  },
+
+  aiModalBooks: { 
+    gap: s(6), 
+    marginBottom: s(20) 
+  },
+  aiModalBooksTitle: { 
+    fontSize: s(isTablet ? 15 : 13), 
+    fontFamily: F.semiBold, 
+    color: "#4b5563", 
+    marginBottom: s(4) 
+  },
+  aiModalBookItem: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    gap: s(8) 
+  },
+  aiModalBookText: { 
+    fontSize: s(isTablet ? 15 : 13), 
+    fontFamily: F.regular, 
+    color: "#4b5563" 
+  },
+  aiModalEmptyText: { 
+    fontSize: s(isTablet ? 15 : 13), 
+    fontFamily: F.regular, 
+    color: "#6b7280", 
+    fontStyle: "italic" 
+  },
+
+  aiModalStartBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: s(8),
+    backgroundColor: "#1d5152",
+    borderRadius: s(999),
+    paddingVertical: s(isTablet ? 16 : 14),
+    shadowColor: "#1d5152",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  aiModalStartBtnDisabled: {
+    backgroundColor: "#e5e3e1",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  aiModalStartBtnText: { 
+    fontSize: s(isTablet ? 18 : 16), 
+    fontFamily: F.bold, 
+    color: "#ffffff" 
+  },
+
+  aiModalCancel: {
+    paddingVertical: s(10),
+    alignItems: "center",
+    marginTop: s(8),
+  },
+  aiModalCancelText: { 
+    fontSize: s(isTablet ? 16 : 14), 
+    fontFamily: F.regular, 
+    color: "#6b7280" 
+  },
 });
