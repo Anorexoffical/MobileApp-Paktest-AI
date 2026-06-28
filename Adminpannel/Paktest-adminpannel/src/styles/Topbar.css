@@ -1,0 +1,409 @@
+/* ================================================================
+   Topbar — fully isolated from Bootstrap
+   ================================================================ */
+
+.topbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 70px !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: rgba(255,255,255,0.97) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 2rem !important;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important;
+  border-bottom: 1px solid rgba(226,232,240,0.9) !important;
+  gap: 1rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* ── Brand ── */
+.topbar .topbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  text-decoration: none !important;
+}
+
+.topbar .logo-container {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #6366f1, #f43f5e) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.2rem !important;
+  box-shadow: 0 3px 10px rgba(99,102,241,0.35) !important;
+  flex-shrink: 0;
+}
+
+.topbar .topbar-title {
+  font-weight: 800 !important;
+  font-size: 1.2rem !important;
+  letter-spacing: -0.3px !important;
+  background: linear-gradient(135deg, #6366f1, #f43f5e) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+.topbar .topbar-title span {
+  font-weight: 500 !important;
+}
+
+/* ── Nav menu ── */
+.topbar .topbar-menu {
+  display: flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  flex: 1 !important;
+  justify-content: center !important;
+  overflow-x: auto;
+  scrollbar-width: none;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.topbar .topbar-menu::-webkit-scrollbar { display: none; }
+
+.topbar .menu-item {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 7px 12px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-size: 0.8rem !important;
+  text-decoration: none !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.topbar .menu-item:hover {
+  background: rgba(99,102,241,0.08) !important;
+  color: #6366f1 !important;
+  transform: translateY(-1px) !important;
+  text-decoration: none !important;
+}
+
+.topbar .menu-item.active {
+  background: rgba(99,102,241,0.1) !important;
+  color: #4f46e5 !important;
+  font-weight: 700 !important;
+}
+
+.topbar .menu-icon {
+  font-size: 0.9rem !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+}
+
+.topbar .active-indicator {
+  position: absolute !important;
+  bottom: 2px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 0 !important;
+  height: 2px !important;
+  background: #6366f1 !important;
+  border-radius: 2px !important;
+  transition: width 0.2s ease !important;
+}
+
+.topbar .menu-item.active .active-indicator {
+  width: 55% !important;
+}
+
+/* ── Mobile toggle ── */
+.topbar .menu-toggle {
+  display: none !important;
+  font-size: 1.4rem !important;
+  color: #1e293b !important;
+  cursor: pointer !important;
+  background: rgba(99,102,241,0.08) !important;
+  padding: 7px !important;
+  border-radius: 8px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── Right side ── */
+.topbar .topbar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── Profile button — override Bootstrap .btn completely ── */
+.topbar .user-profile {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 5px 12px 5px 5px !important;
+  border-radius: 40px !important;
+  cursor: pointer !important;
+  background: rgba(99,102,241,0.07) !important;
+  border: 1px solid rgba(99,102,241,0.18) !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.topbar .user-profile:hover {
+  background: rgba(99,102,241,0.14) !important;
+  border-color: rgba(99,102,241,0.35) !important;
+  box-shadow: 0 2px 12px rgba(99,102,241,0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.topbar .user-avatar {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  border: 2px solid white !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12) !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.topbar .user-info {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  line-height: 1.2 !important;
+}
+
+.topbar .user-name {
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+}
+
+.topbar .user-role {
+  color: #64748b !important;
+  font-size: 0.68rem !important;
+  margin: 0 !important;
+}
+
+.topbar .profile-menu-arrow {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.topbar .profile-arrow {
+  font-size: 0.7rem !important;
+  color: #94a3b8 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.topbar .profile-arrow.open {
+  transform: rotate(180deg) !important;
+  color: #6366f1 !important;
+}
+
+/* ── Dropdown ── */
+.topbar .profile-menu-container {
+  position: relative !important;
+}
+
+.topbar .profile-menu {
+  position: absolute !important;
+  right: 0 !important;
+  top: calc(100% + 10px) !important;
+  min-width: 230px !important;
+  background: white !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06) !important;
+  border: 1px solid rgba(226,232,240,0.8) !important;
+  overflow: hidden !important;
+  z-index: 10000 !important;
+  animation: tbFadeIn 0.18s ease-out;
+}
+
+@keyframes tbFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.topbar .profile-menu-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  background: linear-gradient(135deg,rgba(99,102,241,0.06),rgba(244,63,94,0.04)) !important;
+  border-bottom: 1px solid rgba(226,232,240,0.7) !important;
+}
+
+.topbar .profile-menu-avatar {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  border: 2px solid white !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+}
+
+.topbar .profile-menu-name {
+  font-weight: 700 !important;
+  font-size: 0.87rem !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+}
+
+.topbar .profile-menu-email {
+  color: #64748b !important;
+  font-size: 0.74rem !important;
+  margin: 2px 0 0 !important;
+}
+
+.topbar .profile-menu-divider {
+  height: 1px !important;
+  background: rgba(226,232,240,0.8) !important;
+  margin: 2px 0 !important;
+}
+
+/* Override Bootstrap .btn inside topbar dropdown */
+.topbar .profile-menu-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 16px !important;
+  color: #1e293b !important;
+  font-size: 0.84rem !important;
+  font-weight: 500 !important;
+  transition: all 0.15s ease !important;
+  border: none !important;
+  background: none !important;
+  width: 100% !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  letter-spacing: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.topbar .profile-menu-item:hover {
+  background: rgba(99,102,241,0.07) !important;
+  padding-left: 20px !important;
+  color: #1e293b !important;
+  text-decoration: none !important;
+}
+
+.topbar .profile-menu-item.logout {
+  color: #ef4444 !important;
+}
+
+.topbar .profile-menu-item.logout:hover {
+  background: rgba(239,68,68,0.08) !important;
+  color: #ef4444 !important;
+}
+
+.topbar .profile-menu-icon {
+  font-size: 0.84rem !important;
+  width: 16px !important;
+  flex-shrink: 0 !important;
+  opacity: 0.8 !important;
+}
+
+/* ── Mobile logout — override Bootstrap .btn ── */
+.topbar .logout-btn {
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(239,68,68,0.08) !important;
+  border: none !important;
+  color: #ef4444 !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  padding: 8px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  width: auto !important;
+  line-height: 1 !important;
+}
+
+.topbar .logout-btn:hover {
+  background: rgba(239,68,68,0.15) !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1200px) {
+  .topbar { padding: 0 1.5rem !important; }
+  .topbar .menu-item { padding: 7px 9px !important; font-size: 0.76rem !important; }
+  .topbar .user-info { display: none !important; }
+  .topbar .user-profile { padding: 5px !important; }
+}
+
+@media (max-width: 900px) {
+  .topbar .topbar-menu {
+    display: none !important;
+    position: fixed !important;
+    top: 70px !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: white !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 10px 14px 16px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+    border-top: 1px solid rgba(226,232,240,0.8) !important;
+    gap: 4px !important;
+    overflow-x: unset !important;
+    z-index: 9998 !important;
+    justify-content: flex-start !important;
+  }
+
+  .topbar .topbar-menu.show {
+    display: flex !important;
+  }
+
+  .topbar .menu-toggle {
+    display: flex !important;
+  }
+
+  .topbar .menu-item {
+    font-size: 0.88rem !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    color: #1e293b !important;
+  }
+
+  .topbar .active-indicator { display: none !important; }
+  .topbar .profile-menu-arrow { display: none !important; }
+  .topbar .user-info { display: none !important; }
+  .topbar .logout-btn { display: flex !important; }
+  .topbar .profile-menu-container { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .topbar { padding: 0 1rem !important; height: 60px !important; }
+  .topbar .topbar-title { font-size: 1rem !important; }
+  .topbar .topbar-menu { top: 60px !important; }
+}
