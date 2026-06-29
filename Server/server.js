@@ -1,22 +1,24 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+import app from "./src/app.js";
+import prisma from "./src/config/prisma.js";
 
-const express = require("express");
-const cors = require("cors");
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "PakTest AI Backend Running 🚀"
-    });
-});
+dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// ✅ DB CONNECT FIRST
+const startServer = async () => {
+  try {
+    await prisma.$connect();
+    console.log("✅ Database Connected Successfully");
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server listening on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ DB Connection Failed:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
