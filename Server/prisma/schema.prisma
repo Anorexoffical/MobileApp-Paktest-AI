@@ -1,0 +1,251 @@
+// ============================================================
+// PAKTEST-AI — Prisma Schema
+// Database: MySQL (paktest_ai)
+// Generated from ERD diagram analysis
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// TestConductBodies
+// One TestConductBody → Many Positions
+// One TestConductBody → Many JobPosts
+// ============================================================
+model TestConductBody {
+  testBodyID  Int     @id @default(autoincrement())
+  shortName   String  @db.VarChar(50)
+  fullName    String  @db.VarChar(200)
+  description String? @db.Text
+
+  // Relations
+  positions Position[]
+  jobPosts  JobPost[]
+
+  @@map("test_conduct_bodies")
+}
+
+// ============================================================
+// Position
+// One Position → Many Papers
+// One Position → Many JobPosts
+// One Position → Many Subjects
+// One Position → Many TestPatterns
+// One TestConductBody → Many Positions (FK: testBodyID)
+// ============================================================
+model Position {
+  positionID    Int     @id @default(autoincrement())
+  positionTitle String  @db.VarChar(200)
+  description   String? @db.Text
+  department    String? @db.VarChar(200)
+  bpsLevel      String? @db.VarChar(20)
+  requirements  String? @db.Text
+
+  // FK → TestConductBody
+  testBodyID Int
+  testBody   TestConductBody @relation(fields: [testBodyID], references: [testBodyID])
+
+  // Relations
+  papers       Paper[]
+  jobPosts     JobPost[]
+  subjects     Subject[]
+  testPatterns TestPattern[]
+
+  @@map("positions")
+}
+
+// ============================================================
+// JobPost
+// Many JobPosts → One TestConductBody (FK: testConductBodyID)
+// Many JobPosts → One Position (FK: positionID)
+// ============================================================
+model JobPost {
+  jobPostID    Int     @id @default(autoincrement())
+  jobTitle     String  @db.VarChar(200)
+  department   String? @db.VarChar(200)
+  bpsLevel     String? @db.VarChar(20)
+  openSeats    Int?
+  description  String? @db.Text
+  requirements String? @db.Text
+
+  // FK → TestConductBody
+  testConductBodyID Int
+  testConductBody   TestConductBody @relation(fields: [testConductBodyID], references: [testBodyID])
+
+  // FK → Position
+  positionID Int
+  position   Position @relation(fields: [positionID], references: [positionID])
+
+  @@map("job_posts")
+}
+
+// ============================================================
+// Paper
+// Many Papers → One Position (FK: jobPositionID)
+// ============================================================
+model Paper {
+  paperID     Int     @id @default(autoincrement())
+  paperTitle  String  @db.VarChar(300)
+  year        Int?
+  type        String? @db.VarChar(100)
+  difficulty  String? @db.VarChar(50)
+  duration    Int? // duration in minutes
+  description String? @db.Text
+
+  // FK → Position  (named jobPositionID in ERD)
+  jobPositionID Int
+  position      Position @relation(fields: [jobPositionID], references: [positionID])
+
+  @@map("papers")
+}
+
+// ============================================================
+// Subject
+// Many Subjects → One Book     (FK: bookID)
+// Many Subjects → One Position (FK: positionID)
+// One Subject   → Many Books   (reverse)
+// One Subject   → Many MCQs    (via BookChapter)
+// ============================================================
+model Subject {
+  subjectID   Int     @id @default(autoincrement())
+  name        String  @db.VarChar(200)
+  description String? @db.Text
+
+  // FK → Book (ERD shows bookID on Subject)
+  bookID Int
+  book   Book @relation(fields: [bookID], references: [bookID])
+
+  // FK → Position
+  positionID Int
+  position   Position @relation(fields: [positionID], references: [positionID])
+
+  // Relations
+  bookChapters BookChapter[]
+
+  @@map("subjects")
+}
+
+// ============================================================
+// Book
+// One Book → Many Subjects
+// One Book → Many BookChapters
+// (ERD shows subjectID on Book, but Subject also has bookID —
+//  keeping bookID on Subject as the owning FK, Book has no FK
+//  back to Subject to avoid circular dependency)
+// ============================================================
+model Book {
+  bookID      Int     @id @default(autoincrement())
+  bookName    String  @db.VarChar(300)
+  author      String? @db.VarChar(200)
+  description String? @db.Text
+
+  // Relations
+  subjects     Subject[]
+  bookChapters BookChapter[]
+
+  @@map("books")
+}
+
+// ============================================================
+// BookChapter
+// Many BookChapters → One Book    (FK: bookID)
+// Many BookChapters → One Subject (FK: subjectID) — added for clarity
+// One BookChapter   → Many MCQs
+// ============================================================
+model BookChapter {
+  chapterID   Int    @id @default(autoincrement())
+  chapterName String @db.VarChar(300)
+
+  // FK → Book
+  bookID Int
+  book   Book @relation(fields: [bookID], references: [bookID])
+
+  // FK → Subject (added — chapters logically belong to a subject)
+  subjectID Int
+  subject   Subject @relation(fields: [subjectID], references: [subjectID])
+
+  // Relations
+  mcqs MCQS[]
+
+  @@map("book_chapters")
+}
+
+// ============================================================
+// MCQS
+// Many MCQs → One BookChapter (FK: chapterID)
+// ============================================================
+model MCQS {
+  mcqsID        Int     @id @default(autoincrement())
+  question      String  @db.Text
+  options       Json // store as JSON array e.g. ["A","B","C","D"]
+  correctAnswer String  @db.VarChar(10)
+  difficulty    String? @db.VarChar(50)
+  topic         String? @db.VarChar(200)
+  explanation   String? @db.Text
+
+  // FK → BookChapter
+  chapterID Int
+  chapter   BookChapter @relation(fields: [chapterID], references: [chapterID])
+
+  @@map("mcqs")
+}
+
+// ============================================================
+// TestPattern
+// Many TestPatterns → One Position (FK: positionID)
+// ============================================================
+model TestPattern {
+  testPatternID Int  @id @default(autoincrement())
+  totalMcqs     Int
+  timeLimit     Int // in minutes
+  passingMarks  Int
+  sections      Json // List:Subject[Section, MCQs, Percent%] stored as JSON
+  // e.g. [{"subject":"English","section":"Grammar","mcqs":20,"percent":25}]
+
+  // FK → Position
+  positionID Int
+  position   Position @relation(fields: [positionID], references: [positionID])
+
+  @@map("test_patterns")
+}
+
+// ============================================================
+// User
+// One User → One UserPersonalized (1-to-1)
+// ============================================================
+model User {
+  userID   Int     @id @default(autoincrement())
+  userName String  @unique @db.VarChar(100)
+  password String  @db.VarChar(255) // store hashed password
+  role     String  @db.VarChar(50) // e.g. "admin", "user", "candidate"
+  authID   String? @unique @db.VarChar(255) // for OAuth / external auth token
+
+  // Relations
+  userPersonalized UserPersonalized?
+
+  @@map("users")
+}
+
+// ============================================================
+// UserPersonalized
+// One UserPersonalized → One User (FK: userID)
+// ============================================================
+model UserPersonalized {
+  userPersonalizedID Int     @id @default(autoincrement())
+  educationalBg      String? @db.Text
+  testConductBody    String? @db.VarChar(200) // preferred test body name / reference
+  city               String? @db.VarChar(100)
+  yearsOfExperience  Int?
+
+  // FK → User (1-to-1)
+  userID Int  @unique
+  user   User @relation(fields: [userID], references: [userID])
+
+  @@map("user_personalized")
+}
