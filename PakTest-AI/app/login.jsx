@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from '../context/AuthContext';
 import {
   View,
   Text,
@@ -89,6 +90,7 @@ const ArrowRightIcon = () => (
 // ── Main Component ──────────────────────────────────────
 export default function Login() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -97,12 +99,16 @@ export default function Login() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login(email, password);
+      router.replace("/completeprofile");
+    } catch (error) {
+      alert('Invalid credentials. Use admin/admin to login.');
+    } finally {
       setLoading(false);
-      router.push("/");
-    }, 1500);
+    }
   };
 
   const handleResetPassword = () => {
@@ -115,12 +121,16 @@ export default function Login() {
     }, 1500);
   };
 
-  const handleSocialLogin = (provider) => {
+  const handleSocialLogin = async (provider) => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login(`${provider}@example.com`, 'social');
+      router.replace("/completeprofile");
+    } catch (error) {
+      console.error(error);
+    } finally {
       setLoading(false);
-      router.push("/");
-    }, 1500);
+    }
   };
 
   if (showResetPassword) {

@@ -1,173 +1,256 @@
-import React, { useState } from 'react';
-import { FaPlus, FaSearch, FaPencilAlt, FaTrash, FaTimes, FaBriefcase } from 'react-icons/fa';
-import '../styles/admin.css';
+import React, { useState, useEffect } from 'react';
+import { Button, Modal, Form, Badge, Card, Table, Row, Col } from 'react-bootstrap';
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiBook, FiFolder } from 'react-icons/fi';
+import { useStore } from '../hooks/useStore';
+import { addPosition, updatePosition, deletePosition } from '../data/store';
+import { Link, useLocation } from 'react-router-dom';
 
-const TESTS = ['PPSC', 'FPSC', 'NTS', 'CSS/PMS', 'GAT', 'MCAT'];
-const BPS   = ['BPS-14','BPS-15','BPS-16','BPS-17','BPS-18','BPS-19','BPS-20'];
+const BPS_LEVELS = ['BPS-14', 'BPS-15', 'BPS-16', 'BPS-17', 'BPS-18', 'BPS-19', 'BPS-20'];
 
-const initPositions = [
-  { id:1, title:'Accountant',              department:'Finance Department',       test:'PPSC', bps:'BPS-16', seats:42,  description:'Responsible for maintaining financial records and audits.' },
-  { id:2, title:'Senior Secondary Teacher',department:'School Education Dept',    test:'PPSC', bps:'BPS-16', seats:156, description:'Teaching position for SST in Government Schools.' },
-  { id:3, title:'Lecturer Computer Science',department:'Higher Education Dept',   test:'PPSC', bps:'BPS-17', seats:80,  description:'Teach computer science at degree colleges.' },
-  { id:4, title:'Assistant Director',      department:'Federal Investigation Agency',test:'FPSC',bps:'BPS-17',seats:30, description:'Investigative and administrative role in FIA.' },
-  { id:5, title:'Medical Officer',         department:'Primary & Secondary Health',test:'FPSC', bps:'BPS-17', seats:200, description:'Provide primary healthcare services.' },
-  { id:6, title:'Sub-Inspector',           department:'Punjab Police',             test:'PPSC', bps:'BPS-14', seats:500, description:'Maintain law and order.' },
-];
+const Positions = () => {
+  const { positions, categories, subjects } = useStore();
+  const location = useLocation();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ title: '', description: '', department: '', bpsLevel: '', testConductBody: '' });
+  const [deleteId, setDeleteId] = useState(null);
+  const [filterBody, setFilterBody] = useState('');
 
-const empty = { title:'', department:'', test:'', bps:'', seats:'', description:'' };
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const bodyId = params.get('body');
+    if (bodyId) setFilterBody(bodyId);
+  }, [location]);
 
-export default function Positions() {
-  const [positions, setPositions] = useState(initPositions);
-  const [search, setSearch]       = useState('');
-  const [filterTest, setFilterTest] = useState('');
-  const [modal, setModal]         = useState(false);
-  const [form, setForm]           = useState(empty);
-  const [editId, setEditId]       = useState(null);
-  const [delId, setDelId]         = useState(null);
+  const filtered = positions.filter(p => {
+    const matchSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchBody = filterBody ? p.testConductBody === filterBody : true;
+    return matchSearch && matchBody;
+  });
 
-  const filtered = positions.filter(p =>
-    (p.title.toLowerCase().includes(search.toLowerCase()) || p.department.toLowerCase().includes(search.toLowerCase())) &&
-    (filterTest ? p.test === filterTest : true)
-  );
+  const getBodyName = (id) => {
+    const body = categories.find(c => c.id === id);
+    return body ? `${body.icon} ${body.name}` : 'Not linked';
+  };
 
-  const openAdd  = () => { setForm(empty); setEditId(null); setModal(true); };
-  const openEdit = p  => { setForm({title:p.title,department:p.department,test:p.test,bps:p.bps,seats:p.seats,description:p.description||''}); setEditId(p.id); setModal(true); };
+  const getSubjectCount = (posId) => subjects.filter(s => s.positionId === posId).length;
 
+  const openAdd = () => { setEditing(null); setForm({ title: '', description: '', department: '', bpsLevel: '', testConductBody: filterBody || '' }); setShowModal(true); };
+  const openEdit = (pos) => { setEditing(pos); setForm(pos); setShowModal(true); };
   const handleSave = () => {
-    if (!form.title || !form.test || !form.bps) return;
-    if (editId) {
-      setPositions(positions.map(p => p.id===editId ? {...p,...form,seats:Number(form.seats)} : p));
-    } else {
-      setPositions([...positions, { id:Date.now(), ...form, seats:Number(form.seats) }]);
-    }
-    setModal(false);
+    if (!form.title.trim() || !form.bpsLevel) return;
+    editing ? updatePosition(editing.id, form) : addPosition(form);
+    setShowModal(false);
+  };
+  const confirmDelete = () => {
+    if (deleteId) { deletePosition(deleteId); setDeleteId(null); }
   };
 
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">💼 Positions</h1>
-          <p className="page-subtitle">Job positions linked to tests — shown in the mobile app's Job Portal</p>
-        </div>
-        <div className="page-header-actions">
-          <button className="btn btn-primary" onClick={openAdd}><FaPlus /> Add Position</button>
-        </div>
-      </div>
-
-      <div className="stats-bar">
-        <div className="stat-card"><div className="stat-card-icon purple"><FaBriefcase /></div><div className="stat-card-value">{positions.length}</div><div className="stat-card-label">Total Positions</div></div>
-        <div className="stat-card"><div className="stat-card-icon teal"><FaBriefcase /></div><div className="stat-card-value">{positions.filter(p=>p.test==='PPSC').length}</div><div className="stat-card-label">PPSC</div></div>
-        <div className="stat-card"><div className="stat-card-icon warn"><FaBriefcase /></div><div className="stat-card-value">{positions.filter(p=>p.test==='FPSC').length}</div><div className="stat-card-label">FPSC</div></div>
-        <div className="stat-card"><div className="stat-card-icon success"><FaBriefcase /></div><div className="stat-card-value">{positions.reduce((a,p)=>a+(Number(p.seats)||0),0)}</div><div className="stat-card-label">Total Seats</div></div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <span className="card-title">All Positions</span>
-          <div className="toolbar">
-            <div className="search-box">
-              <FaSearch className="search-icon-abs" />
-              <input placeholder="Search positions…" value={search} onChange={e=>setSearch(e.target.value)} />
-            </div>
-            <select className="filter-select" value={filterTest} onChange={e=>setFilterTest(e.target.value)}>
-              <option value="">All Tests</option>
-              {TESTS.map(t=><option key={t}>{t}</option>)}
-            </select>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '20px' }}>
+      {/* Header */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%)', 
+        padding: '24px 32px', 
+        borderRadius: '16px', 
+        marginBottom: '24px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+      }}>
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <h4 style={{ fontWeight: 800, color: 'white', margin: '0 0 4px' }}>
+              <span style={{ fontSize: '2rem', marginRight: '12px' }}>💼</span> 
+              Positions
+            </h4>
+            <p style={{ color: '#93c5fd', margin: 0 }}>{positions.length} positions configured</p>
           </div>
+          <Button variant="light" onClick={openAdd}>
+            <FiPlus className="me-2" /> Add Position
+          </Button>
         </div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Title</th><th>Department</th><th>Test</th><th>BPS Level</th><th>Seats</th><th className="col-actions">Actions</th></tr>
+      </div>
+
+      {/* Filters */}
+      <Row className="g-3 mb-4">
+        <Col md={6}>
+          <div style={{ position: 'relative' }}>
+            <FiSearch style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <Form.Control
+              type="text"
+              placeholder="Search positions..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ paddingLeft: 36, borderRadius: '10px', border: '1px solid #e2e8f0', height: '46px' }}
+            />
+          </div>
+        </Col>
+        <Col md={6}>
+          <Form.Select
+            value={filterBody}
+            onChange={e => setFilterBody(e.target.value)}
+            style={{ borderRadius: '10px', border: '1px solid #e2e8f0', height: '46px' }}
+          >
+            <option value="">All Test Bodies</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+            ))}
+          </Form.Select>
+        </Col>
+      </Row>
+
+      {/* Table */}
+      <Card style={{ borderRadius: '16px', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <Card.Body className="p-0">
+          <Table hover responsive className="mb-0">
+            <thead style={{ background: '#f8fafc' }}>
+              <tr>
+                <th style={{ padding: '14px 20px', fontWeight: 600 }}>#</th>
+                <th style={{ padding: '14px 20px', fontWeight: 600 }}>Title</th>
+                <th style={{ padding: '14px 20px', fontWeight: 600 }}>Department</th>
+                <th style={{ padding: '14px 20px', fontWeight: 600 }}>BPS</th>
+                <th style={{ padding: '14px 20px', fontWeight: 600 }}>Test Body</th>
+                <th style={{ padding: '14px 20px', fontWeight: 600, textAlign: 'center' }}>Subjects</th>
+                <th style={{ padding: '14px 20px', fontWeight: 600, textAlign: 'center' }}>Actions</th>
+              </tr>
             </thead>
             <tbody>
-              {filtered.length===0 && <tr><td colSpan={7}><div className="empty-state"><div className="empty-state-icon">💼</div><h3>No positions found</h3><p>Add your first position to get started</p><button className="btn btn-primary" onClick={openAdd}><FaPlus /> Add Position</button></div></td></tr>}
-              {filtered.map((p,i) => (
-                <tr key={p.id}>
-                  <td><span className="row-num">{i+1}</span></td>
-                  <td><strong>{p.title}</strong></td>
-                  <td>{p.department}</td>
-                  <td><span className="badge badge-teal">{p.test}</span></td>
-                  <td><span className="badge badge-dark">{p.bps}</span></td>
-                  <td>{p.seats || '—'}</td>
-                  <td className="col-actions">
-                    <div className="actions-cell">
-                      <button className="btn btn-outline btn-sm btn-icon" onClick={()=>openEdit(p)}><FaPencilAlt /></button>
-                      <button className="btn btn-danger btn-sm btn-icon" onClick={()=>setDelId(p.id)}><FaTrash /></button>
-                    </div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-5">
+                    <div style={{ fontSize: '3rem', marginBottom: 16 }}>💼</div>
+                    <h5 style={{ color: '#475569' }}>No positions found</h5>
+                    <Button variant="primary" onClick={openAdd} className="mt-2">
+                      <FiPlus /> Add Position
+                    </Button>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((pos, idx) => (
+                  <tr key={pos.id}>
+                    <td style={{ padding: '12px 20px', color: '#94a3b8' }}>{idx + 1}</td>
+                    <td style={{ padding: '12px 20px', fontWeight: 600 }}>{pos.title}</td>
+                    <td style={{ padding: '12px 20px', color: '#64748b' }}>{pos.department || '—'}</td>
+                    <td style={{ padding: '12px 20px' }}>
+                      <Badge bg="primary">{pos.bpsLevel}</Badge>
+                    </td>
+                    <td style={{ padding: '12px 20px' }}>
+                      <Badge bg="secondary">{getBodyName(pos.testConductBody)}</Badge>
+                    </td>
+                    <td style={{ padding: '12px 20px', textAlign: 'center' }}>
+                      <Badge bg="success">{getSubjectCount(pos.id)}</Badge>
+                    </td>
+                    <td style={{ padding: '12px 20px', textAlign: 'center' }}>
+                      <div className="d-flex gap-2 justify-content-center">
+                        <Link to={`/admin/subjects?position=${pos.id}`}>
+                          <Button variant="outline-info" size="sm" title="Manage Subjects">
+                            <FiBook size={14} />
+                          </Button>
+                        </Link>
+                        <Button variant="outline-warning" size="sm" onClick={() => openEdit(pos)}>
+                          <FiEdit size={14} />
+                        </Button>
+                        <Button variant="outline-danger" size="sm" onClick={() => setDeleteId(pos.id)}>
+                          <FiTrash2 size={14} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
-          </table>
-        </div>
-      </div>
+          </Table>
+        </Card.Body>
+      </Card>
 
-      {modal && (
-        <div className="modal-overlay" onClick={()=>setModal(false)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{editId ? 'Edit Position' : 'Add Position'}</h3>
-              <button className="modal-close" onClick={()=>setModal(false)}><FaTimes /></button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group form-full">
-                  <label className="form-label">Position Title <span className="req">*</span></label>
-                  <input className="form-control" placeholder="e.g. Accountant" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} />
-                </div>
-                <div className="form-group form-full">
-                  <label className="form-label">Department</label>
-                  <input className="form-control" placeholder="e.g. Finance Department" value={form.department} onChange={e=>setForm({...form,department:e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Test <span className="req">*</span></label>
-                  <select className="form-control" value={form.test} onChange={e=>setForm({...form,test:e.target.value})}>
-                    <option value="">Select test</option>
-                    {TESTS.map(t=><option key={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">BPS Level <span className="req">*</span></label>
-                  <select className="form-control" value={form.bps} onChange={e=>setForm({...form,bps:e.target.value})}>
-                    <option value="">Select BPS</option>
-                    {BPS.map(b=><option key={b}>{b}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Available Seats</label>
-                  <input className="form-control" type="number" min="0" placeholder="e.g. 42" value={form.seats} onChange={e=>setForm({...form,seats:e.target.value})} />
-                </div>
-                <div className="form-group form-full">
-                  <label className="form-label">Description</label>
-                  <textarea className="form-control" placeholder="Brief job description…" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} />
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-outline" onClick={()=>setModal(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave}>{editId ? 'Save Changes' : 'Add Position'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Add/Edit Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">{editing ? 'Edit' : 'Add'} Position</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Position Title <span className="text-danger">*</span></Form.Label>
+              <Form.Control
+                value={form.title}
+                onChange={e => setForm({ ...form, title: e.target.value })}
+                placeholder="e.g., Assistant Director"
+              />
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Department</Form.Label>
+                  <Form.Control
+                    value={form.department}
+                    onChange={e => setForm({ ...form, department: e.target.value })}
+                    placeholder="e.g., Finance Department"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">BPS Level <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    value={form.bpsLevel}
+                    onChange={e => setForm({ ...form, bpsLevel: e.target.value })}
+                  >
+                    <option value="">Select BPS Level</option>
+                    {BPS_LEVELS.map(bps => (
+                      <option key={bps} value={bps}>{bps}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Test Conduct Body</Form.Label>
+              <Form.Select
+                value={form.testConductBody}
+                onChange={e => setForm({ ...form, testConductBody: e.target.value })}
+              >
+                <option value="">Select Test Body</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                placeholder="Brief description..."
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleSave}>Save</Button>
+        </Modal.Footer>
+      </Modal>
 
-      {delId && (
-        <div className="modal-overlay" onClick={()=>setDelId(null)}>
-          <div className="modal confirm-dialog" onClick={e=>e.stopPropagation()}>
-            <div className="modal-body" style={{textAlign:'center',padding:32}}>
-              <div className="confirm-icon">🗑️</div>
-              <h3>Delete Position?</h3>
-              <p>This will permanently remove this position and its linked content from the app.</p>
-            </div>
-            <div className="modal-footer" style={{justifyContent:'center'}}>
-              <button className="btn btn-outline" onClick={()=>setDelId(null)}>Cancel</button>
-              <button className="btn btn-danger" onClick={()=>{setPositions(positions.filter(p=>p.id!==delId));setDelId(null);}}>Yes, Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Modal */}
+      <Modal show={!!deleteId} onHide={() => setDeleteId(null)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-bold">Delete Position</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to delete this position?</p>
+          <p className="text-danger">All associated subjects, books, chapters, and MCQs will also be deleted.</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancel</Button>
+          <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
-}
+};
+
+export default Positions;
