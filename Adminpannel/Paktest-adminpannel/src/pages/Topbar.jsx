@@ -2,20 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FaTachometerAlt, FaBriefcase, FaBook, FaCheckCircle,
-  FaTable, FaTags, FaQuestionCircle,
-  FaBars, FaTimes, FaChevronDown, FaSignOutAlt, FaPowerOff
+  FaTags, FaBars, FaTimes, FaChevronDown, FaSignOutAlt, FaPowerOff,
+  FaTag, FaClipboardList, FaFileAlt, FaTasks, FaCalendarCheck
 } from 'react-icons/fa';
+import { GiBookshelf } from 'react-icons/gi';
+import { MdOutlineLayers } from 'react-icons/md';
 import '../styles/Topbar.css';
 
 const navLinks = [
-  { to: '/admin',            icon: <FaTachometerAlt />, label: 'Dashboard' },
-  { to: '/admin/categories', icon: <FaTags />,          label: 'Categories' },
-  {to: '/admin/positions',   icon: <FaBriefcase />,     label: 'Positions' },
-  { to: '/admin/jobs',       icon: <FaBriefcase />,     label: 'Jobs' },
-  { to: '/admin/papers',     icon: <FaCheckCircle />,   label: 'Papers' },
-  { to: '/admin/books',      icon: <FaBook />,          label: 'Books' },
-  { to: '/admin/mcqs',       icon: <FaQuestionCircle />,label: 'MCQs' },
-  { to: '/admin/patterns',   icon: <FaTable />,         label: 'Test Patterns' },
+  { to: '/admin', icon: <FaTachometerAlt />, label: 'Dashboard' },
+  { to: '/admin/test-conduct-bodies', icon: <FaTags />, label: 'Test Bodies' },
+  { to: '/admin/positions', icon: <FaBriefcase />, label: 'Positions' },
+  { to: '/admin/subjects', icon: <FaTag />, label: 'Subjects' },
+  { to: '/admin/books', icon: <GiBookshelf />, label: 'Books' },
+  { to: '/admin/chapters', icon: <MdOutlineLayers />, label: 'Chapters' },
+  { to: '/admin/mcqs', icon: <FaCheckCircle />, label: 'MCQs' },
+  { to: '/admin/patterns', icon: <FaTasks />, label: 'Patterns' },
+  { to: '/admin/papers', icon: <FaFileAlt />, label: 'Papers' },
+  { to: '/admin/jobs', icon: <FaClipboardList />, label: 'Jobs' },
 ];
 
 const Topbar = ({ onLogout, userName }) => {
@@ -56,9 +60,15 @@ const Topbar = ({ onLogout, userName }) => {
     navigate('/login');
   };
 
+  const isActive = (to) => {
+    if (to === '/admin') {
+      return location.pathname === '/admin';
+    }
+    return location.pathname.startsWith(to);
+  };
+
   return (
     <div className="topbar">
-      {/* Left: Brand */}
       <div className="topbar-left">
         <div className="logo-container">
           <span style={{ fontSize: '1.6rem' }}>📚</span>
@@ -66,18 +76,16 @@ const Topbar = ({ onLogout, userName }) => {
         <span className="topbar-title">Exam<span>Prep</span> Admin</span>
       </div>
 
-      {/* Mobile Toggle */}
       <div className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
         {menuOpen ? <FaTimes /> : <FaBars />}
       </div>
 
-      {/* Center: Nav */}
       <div className={`topbar-menu ${menuOpen ? 'show' : ''}`}>
         {navLinks.map(({ to, icon, label }) => (
           <Link
             key={to}
             to={to}
-            className={`menu-item ${location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to)) ? 'active' : ''}`}
+            className={`menu-item ${isActive(to) ? 'active' : ''}`}
             onClick={() => setMenuOpen(false)}
           >
             <span className="menu-icon">{icon}</span>
@@ -87,7 +95,6 @@ const Topbar = ({ onLogout, userName }) => {
         ))}
       </div>
 
-      {/* Right: Profile */}
       <div className="topbar-right">
         <div className="profile-menu-container" ref={profileMenuRef}>
           <div className="user-profile" onClick={() => setProfileMenuOpen(!profileMenuOpen)} ref={profileRef}>
@@ -127,7 +134,6 @@ const Topbar = ({ onLogout, userName }) => {
           )}
         </div>
 
-        {/* Mobile logout */}
         <button className="logout-btn mobile-logout" onClick={handleLogout} title="Logout">
           <FaPowerOff />
         </button>

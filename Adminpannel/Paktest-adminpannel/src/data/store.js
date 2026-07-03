@@ -149,29 +149,111 @@ const defaultMockTests = [
 ];
 
 const defaultBooks = [
-  { id: 'book1', positionId: 'pos2', title: 'Computer Science for Competitive Exams', author: 'Dr. Tahir-ul-Qadri', pages: 320, totalMcqs: 450, description: 'Comprehensive CS guide for PPSC/FPSC' },
-  { id: 'book2', positionId: 'pos2', title: 'Programming Fundamentals',               author: 'Prof. Ahmad Khan',   pages: 280, totalMcqs: 350, description: 'Basic to advanced programming concepts' },
-  { id: 'book3', positionId: 'pos4', title: 'Administration & Management',            author: 'Dr. A. Malik',       pages: 350, totalMcqs: 400, description: 'Management principles for FIA/CSS' },
-  { id: 'book4', positionId: 'pos7', title: 'Medical Sciences Complete Guide',        author: 'Dr. S. Ahmed',       pages: 400, totalMcqs: 500, description: 'Complete medical sciences reference' },
-  { id: 'book5', positionId: 'pos4', title: 'CSS Pakistan Affairs',                   author: 'Ikram Rabbani',      pages: 600, totalMcqs: 700, description: 'Pakistan Affairs for CSS/PMS' },
-  { id: 'book6', positionId: 'pos5', title: 'Income Tax & Finance Laws Pakistan',     author: 'Prof. Zubair',       pages: 420, totalMcqs: 380, description: 'Tax laws and finance for FBR exams' },
-  { id: 'book7', positionId: 'pos6', title: 'NTS GAT General Prep Guide',             author: 'NTS Official',       pages: 180, totalMcqs: 300, description: 'Official NTS preparation guide' },
-  { id: 'book8', positionId: 'pos1', title: 'Accounting & Finance for Pakistan',      author: 'Prof. M. Irfan',     pages: 360, totalMcqs: 420, description: 'Complete accounting guide' },
+  { id: 'book1', subjectId: 'sub1', title: 'English Grammar for Competitive Exams', author: 'Dr. Tahir-ul-Qadri', pages: 320, totalMcqs: 450, description: 'Comprehensive English guide for PPSC/FPSC' },
+  { id: 'book2', subjectId: 'sub2', title: 'Computer Science Fundamentals',      author: 'Prof. Ahmad Khan',   pages: 280, totalMcqs: 350, description: 'Basic to advanced CS concepts' },
+  { id: 'book3', subjectId: 'sub3', title: 'Accounting Principles',                author: 'Dr. A. Malik',       pages: 350, totalMcqs: 400, description: 'Complete accounting reference for competitive exams' },
 ];
 
+// ── Subjects State ────────────────────────────────────────────────────
+const defaultSubjects = [
+  { 
+    id: 'sub1', 
+    name: 'English', 
+    code: 'ENG-101', 
+    totalMarks: 100, 
+    description: 'English language and literature',
+    positionId: 'pos2' 
+  },
+  { 
+    id: 'sub2', 
+    name: 'Computer Science', 
+    code: 'CS-101', 
+    totalMarks: 100, 
+    description: 'Fundamentals of computer science',
+    positionId: 'pos2' 
+  },
+  { 
+    id: 'sub3', 
+    name: 'Accounting', 
+    code: 'ACC-101', 
+    totalMarks: 100, 
+    description: 'Basic accounting principles',
+    positionId: 'pos1' 
+  }
+];
+
+// ── Chapters State ──────────────────────────────────────────────────
+const defaultChapters = [
+  { 
+    id: 'ch1', 
+    name: 'Parts of Speech', 
+    chapterNumber: '1', 
+    totalMcqs: 50, 
+    description: 'Introduction to parts of speech',
+    bookId: 'book1' 
+  },
+  { 
+    id: 'ch2', 
+    name: 'Tenses', 
+    chapterNumber: '2', 
+    totalMcqs: 60, 
+    description: 'English tenses explained',
+    bookId: 'book1' 
+  },
+  { 
+    id: 'ch3', 
+    name: 'Programming Basics', 
+    chapterNumber: '1', 
+    totalMcqs: 40, 
+    description: 'Introduction to programming',
+    bookId: 'book2' 
+  }
+];
+
+// ── MCQs State ──────────────────────────────────────────────────────
 const defaultMcqs = [
-  { id: 'mcq1',  paperId: 'paper1', bookId: 'book1', question: 'What is the capital of Pakistan?',                                    options: ['Lahore','Karachi','Islamabad','Peshawar'],                       correctAnswer: 2, explanation: 'Islamabad became the capital in 1966.',              difficulty: 'Easy',   topic: 'General Knowledge' },
-  { id: 'mcq2',  paperId: 'paper1', bookId: 'book1', question: 'Which data structure uses LIFO principle?',                           options: ['Queue','Stack','Array','Linked List'],                           correctAnswer: 1, explanation: 'Stack follows Last-In-First-Out (LIFO).',             difficulty: 'Medium', topic: 'Data Structures' },
-  { id: 'mcq3',  paperId: 'paper2', bookId: 'book2', question: 'What is the time complexity of binary search?',                      options: ['O(n)','O(log n)','O(n²)','O(1)'],                               correctAnswer: 1, explanation: 'Binary search halves the search space each step.',    difficulty: 'Medium', topic: 'Algorithms' },
-  { id: 'mcq4',  paperId: 'paper3', bookId: 'book3', question: 'What is the primary role of FIA?',                                   options: ['Traffic Management','Federal Investigation','Tax Collection','Education'], correctAnswer: 1, explanation: 'FIA handles federal-level investigations.',  difficulty: 'Easy',   topic: 'Law Enforcement' },
-  { id: 'mcq5',  paperId: 'paper4', bookId: 'book4', question: 'Which organ filters blood in the human body?',                       options: ['Liver','Kidney','Heart','Lungs'],                                correctAnswer: 1, explanation: 'Kidneys filter blood and remove waste.',             difficulty: 'Easy',   topic: 'Anatomy' },
-  { id: 'mcq6',  paperId: 'paper5', bookId: 'book5', question: 'When was Pakistan established?',                                     options: ['1945','1946','1947','1948'],                                     correctAnswer: 2, explanation: 'Pakistan was created on 14 August 1947.',            difficulty: 'Easy',   topic: 'Pakistan Studies' },
-  { id: 'mcq7',  paperId: 'paper1', bookId: 'book2', question: 'What does OOP stand for?',                                           options: ['Open Operational Program','Object Oriented Programming','Ordered Output Process','None'], correctAnswer: 1, explanation: 'OOP is a programming paradigm.', difficulty: 'Easy', topic: 'Programming' },
-  { id: 'mcq8',  paperId: 'paper2', bookId: 'book1', question: 'Which sorting algorithm has the best average-case time complexity?', options: ['Bubble Sort','Selection Sort','Merge Sort','Insertion Sort'],    correctAnswer: 2, explanation: 'Merge Sort has O(n log n) average complexity.',        difficulty: 'Hard',   topic: 'Algorithms' },
-  { id: 'mcq9',  paperId: 'paper8', bookId: 'book8', question: 'What is the accounting equation?',                                   options: ['Assets = Liabilities','Assets = Liabilities + Equity','Revenue - Expenses = Profit','None'], correctAnswer: 1, explanation: 'The fundamental accounting equation.', difficulty: 'Easy', topic: 'Accounting' },
-  { id: 'mcq10', paperId: 'paper6', bookId: 'book7', question: 'What does NTS stand for?',                                           options: ['National Test Service','National Testing Service','New Testing System','None'], correctAnswer: 1, explanation: 'NTS stands for National Testing Service.', difficulty: 'Easy', topic: 'General Knowledge' },
-  { id: 'mcq11', paperId: 'paper1', bookId: 'book1', question: 'Which protocol is used for sending emails?',                         options: ['HTTP','FTP','SMTP','SSH'],                                       correctAnswer: 2, explanation: 'SMTP (Simple Mail Transfer Protocol) is used for email.',difficulty: 'Medium', topic: 'Networking' },
-  { id: 'mcq12', paperId: 'paper7', bookId: 'book6', question: 'What is the full form of FBR?',                                      options: ['Federal Business Registry','Federal Board of Revenue','Finance Bureau of Revenue','None'], correctAnswer: 1, explanation: 'FBR = Federal Board of Revenue.', difficulty: 'Easy', topic: 'Finance' },
+  { 
+    id: 'mcq1', 
+    question: 'What is the capital of Pakistan?', 
+    optionA: 'Karachi', 
+    optionB: 'Lahore', 
+    optionC: 'Islamabad', 
+    optionD: 'Rawalpindi', 
+    correctAnswer: 'C',
+    explanation: 'Islamabad is the capital city of Pakistan.',
+    chapterId: 'ch1',
+    paperId: 'paper1',
+    difficulty: 'Easy',
+    topic: 'General Knowledge'
+  },
+  { 
+    id: 'mcq2', 
+    question: 'What is the largest planet in our solar system?', 
+    optionA: 'Earth', 
+    optionB: 'Saturn', 
+    optionC: 'Jupiter', 
+    optionD: 'Neptune', 
+    correctAnswer: 'C',
+    explanation: 'Jupiter is the largest planet in our solar system.',
+    chapterId: 'ch1',
+    paperId: 'paper1',
+    difficulty: 'Easy',
+    topic: 'Science'
+  },
+  { 
+    id: 'mcq3', 
+    question: 'Which data structure uses LIFO principle?', 
+    optionA: 'Queue', 
+    optionB: 'Stack', 
+    optionC: 'Array', 
+    optionD: 'Linked List', 
+    correctAnswer: 'B',
+    explanation: 'Stack follows Last-In-First-Out (LIFO).',
+    chapterId: 'ch3',
+    paperId: 'paper2',
+    difficulty: 'Medium',
+    topic: 'Data Structures'
+  }
 ];
 
 const defaultTestPatterns = [
@@ -195,9 +277,11 @@ let _positions          = load('pak_positions',     defaultPositions);
 let _papers             = load('pak_papers',        defaultPapers);
 let _mockTests          = load('pak_mock_tests',    defaultMockTests);
 let _books              = load('pak_books',         defaultBooks);
+let _subjects           = load('pak_subjects',      defaultSubjects);
+let _chapters           = load('pak_chapters',      defaultChapters);
 let _mcqs               = load('pak_mcqs',          defaultMcqs);
 let _testPatterns       = load('pak_patterns',      defaultTestPatterns);
-let _nextId             = load('pak_nextId',        { cat: 300, pos: 300, paper: 300, book: 300, mcq: 300, pattern: 300, mock: 300 });
+let _nextId             = load('pak_nextId',        { cat: 300, pos: 300, paper: 300, book: 300, mcq: 300, pattern: 300, mock: 300, subject: 300, chapter: 300 });
 
 // ── Pub/sub ───────────────────────────────────────────────────
 let _listeners = [];
@@ -211,6 +295,8 @@ export const getCategoryPositions = () => _categoryPositions;
 export const getPapers            = () => _papers;
 export const getMockTests         = () => _mockTests;
 export const getBooks             = () => _books;
+export const getSubjects          = () => _subjects;
+export const getChapters          = () => _chapters;
 export const getMcqs              = () => _mcqs;
 export const getTestPatterns      = () => _testPatterns;
 
@@ -220,13 +306,17 @@ export let jobs         = _positions;
 export let papers       = _papers;
 export let mockTests    = _mockTests;
 export let books        = _books;
+export let subjects     = _subjects;
+export let chapters     = _chapters;
 export let mcqs         = _mcqs;
 export let testPatterns = _testPatterns;
 
 const syncExports = () => {
   categories = _categories; jobs = _positions;
   papers = _papers; mockTests = _mockTests;
-  books = _books; mcqs = _mcqs; testPatterns = _testPatterns;
+  books = _books; subjects = _subjects;
+  chapters = _chapters; mcqs = _mcqs; 
+  testPatterns = _testPatterns;
 };
 
 // ── Categories ────────────────────────────────────────────────
@@ -259,7 +349,6 @@ export const deleteCategory = (id) => {
 // Link/unlink positions from a category
 export const setCategoryPositions = (catId, positionIds) => {
   _categoryPositions = { ..._categoryPositions, [catId]: positionIds };
-  // Also update categoryIds on each position
   _positions = _positions.map(p => ({
     ...p,
     categoryIds: positionIds.includes(p.id)
@@ -280,7 +369,6 @@ export const getPositionsForCategory = (catId) => {
 export const addPosition = (data) => {
   const item = { ...data, id: `pos_${_nextId.pos++}`, categoryIds: data.categoryIds || [] };
   _positions = [..._positions, item];
-  // link back into categoryPositions
   item.categoryIds.forEach(catId => {
     _categoryPositions[catId] = [...new Set([...(_categoryPositions[catId] || []), item.id])];
   });
@@ -292,7 +380,6 @@ export const addPosition = (data) => {
 export const updatePosition = (id, data) => {
   const old = _positions.find(p => p.id === id);
   _positions = _positions.map(p => p.id === id ? { ...p, ...data } : p);
-  // re-sync categoryPositions if categoryIds changed
   if (data.categoryIds) {
     const allCatIds = new Set([...(old?.categoryIds || []), ...data.categoryIds]);
     allCatIds.forEach(catId => {
@@ -310,8 +397,26 @@ export const deletePosition = (id) => {
   Object.keys(_categoryPositions).forEach(catId => {
     _categoryPositions[catId] = _categoryPositions[catId].filter(pid => pid !== id);
   });
+  const subjectsToDelete = _subjects.filter(s => s.positionId === id);
+  subjectsToDelete.forEach(subject => {
+    const booksToDelete = _books.filter(b => b.subjectId === subject.id);
+    booksToDelete.forEach(book => {
+      const chaptersToDelete = _chapters.filter(c => c.bookId === book.id);
+      chaptersToDelete.forEach(chapter => {
+        _mcqs = _mcqs.filter(m => m.chapterId !== chapter.id);
+      });
+      _chapters = _chapters.filter(c => c.bookId !== book.id);
+    });
+    _books = _books.filter(b => b.subjectId !== subject.id);
+  });
+  _subjects = _subjects.filter(s => s.positionId !== id);
+  
   save('pak_positions', _positions);
   save('pak_cat_positions', _categoryPositions);
+  save('pak_subjects', _subjects);
+  save('pak_books', _books);
+  save('pak_chapters', _chapters);
+  save('pak_mcqs', _mcqs);
   syncExports(); notify();
 };
 
@@ -319,17 +424,167 @@ export const deletePosition = (id) => {
 export const addJob    = addPosition;
 export const updateJob = updatePosition;
 export const deleteJob = deletePosition;
+export const toggleJobStatus = (id) => {
+  _positions = _positions.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p);
+  save('pak_positions', _positions); syncExports(); notify();
+};
+
+// ── Subjects ──────────────────────────────────────────────────
+export const addSubject = (data) => {
+  const item = { ...data, id: `sub_${_nextId.subject++}` };
+  _subjects = [..._subjects, item];
+  save('pak_subjects', _subjects);
+  save('pak_nextId', _nextId);
+  syncExports(); notify(); return item;
+};
+
+export const updateSubject = (id, data) => {
+  _subjects = _subjects.map(s => s.id === id ? { ...s, ...data } : s);
+  save('pak_subjects', _subjects);
+  syncExports(); notify();
+};
+
+export const deleteSubject = (id) => {
+  const booksToDelete = _books.filter(b => b.subjectId === id);
+  booksToDelete.forEach(book => {
+    const chaptersToDelete = _chapters.filter(c => c.bookId === book.id);
+    chaptersToDelete.forEach(chapter => {
+      _mcqs = _mcqs.filter(m => m.chapterId !== chapter.id);
+    });
+    _chapters = _chapters.filter(c => c.bookId !== book.id);
+  });
+  _books = _books.filter(b => b.subjectId !== id);
+  _subjects = _subjects.filter(s => s.id !== id);
+  
+  save('pak_subjects', _subjects);
+  save('pak_books', _books);
+  save('pak_chapters', _chapters);
+  save('pak_mcqs', _mcqs);
+  syncExports(); notify();
+};
+
+export const getSubjectsForPosition = (positionId) => {
+  return _subjects.filter(s => s.positionId === positionId);
+};
+
+// ── Books ─────────────────────────────────────────────────────
+export const addBook = (data) => {
+  const item = { ...data, id: `book_${_nextId.book++}` };
+  _books = [..._books, item];
+  save('pak_books', _books);
+  save('pak_nextId', _nextId);
+  syncExports(); notify(); return item;
+};
+
+export const updateBook = (id, data) => {
+  _books = _books.map(b => b.id === id ? { ...b, ...data } : b);
+  save('pak_books', _books);
+  syncExports(); notify();
+};
+
+export const deleteBook = (id) => {
+  const chaptersToDelete = _chapters.filter(c => c.bookId === id);
+  chaptersToDelete.forEach(chapter => {
+    _mcqs = _mcqs.filter(m => m.chapterId !== chapter.id);
+  });
+  _chapters = _chapters.filter(c => c.bookId !== id);
+  _books = _books.filter(b => b.id !== id);
+  
+  save('pak_books', _books);
+  save('pak_chapters', _chapters);
+  save('pak_mcqs', _mcqs);
+  syncExports(); notify();
+};
+
+export const getBooksForSubject = (subjectId) => {
+  return _books.filter(b => b.subjectId === subjectId);
+};
+
+// Legacy function for backward compatibility - returns books by position
+export const getBooksForPosition = (positionId) => {
+  return _books.filter(b => b.positionId === positionId);
+};
+
+// ── Chapters ─────────────────────────────────────────────────
+export const addChapter = (data) => {
+  const item = { ...data, id: `ch_${_nextId.chapter++}` };
+  _chapters = [..._chapters, item];
+  save('pak_chapters', _chapters);
+  save('pak_nextId', _nextId);
+  syncExports(); notify(); return item;
+};
+
+export const updateChapter = (id, data) => {
+  _chapters = _chapters.map(c => c.id === id ? { ...c, ...data } : c);
+  save('pak_chapters', _chapters);
+  syncExports(); notify();
+};
+
+export const deleteChapter = (id) => {
+  _mcqs = _mcqs.filter(m => m.chapterId !== id);
+  _chapters = _chapters.filter(c => c.id !== id);
+  save('pak_chapters', _chapters);
+  save('pak_mcqs', _mcqs);
+  syncExports(); notify();
+};
+
+export const getChaptersForBook = (bookId) => {
+  return _chapters.filter(c => c.bookId === bookId);
+};
+
+// ── MCQs ──────────────────────────────────────────────────────
+export const addMcq = (data) => {
+  const item = { ...data, id: `mcq_${_nextId.mcq++}` };
+  _mcqs = [..._mcqs, item];
+  save('pak_mcqs', _mcqs);
+  save('pak_nextId', _nextId);
+  syncExports(); notify(); return item;
+};
+
+export const updateMcq = (id, data) => {
+  _mcqs = _mcqs.map(m => m.id === id ? { ...m, ...data } : m);
+  save('pak_mcqs', _mcqs);
+  syncExports(); notify();
+};
+
+export const deleteMcq = (id) => {
+  _mcqs = _mcqs.filter(m => m.id !== id);
+  save('pak_mcqs', _mcqs);
+  syncExports(); notify();
+};
+
+export const getMcqsForChapter = (chapterId) => {
+  return _mcqs.filter(m => m.chapterId === chapterId);
+};
+
+export const getMcqsForPaper = (paperId) => {
+  return _mcqs.filter(m => m.paperId === paperId);
+};
 
 // ── Papers (Solved) ───────────────────────────────────────────
 export const addPaper = (data) => {
   const item = { ...data, id: `paper_${_nextId.paper++}` };
-  _papers = [..._papers, item]; save('pak_papers', _papers); save('pak_nextId', _nextId); syncExports(); notify(); return item;
+  _papers = [..._papers, item]; 
+  save('pak_papers', _papers); 
+  save('pak_nextId', _nextId); 
+  syncExports(); notify(); 
+  return item;
 };
+
 export const updatePaper = (id, data) => {
-  _papers = _papers.map(p => p.id === id ? { ...p, ...data } : p); save('pak_papers', _papers); syncExports(); notify();
+  _papers = _papers.map(p => p.id === id ? { ...p, ...data } : p); 
+  save('pak_papers', _papers); 
+  syncExports(); notify();
 };
+
 export const deletePaper = (id) => {
-  _papers = _papers.filter(p => p.id !== id); save('pak_papers', _papers); syncExports(); notify();
+  _papers = _papers.filter(p => p.id !== id); 
+  save('pak_papers', _papers); 
+  syncExports(); notify();
+};
+
+export const getPapersForPosition = (positionId) => {
+  return _papers.filter(p => p.positionId === positionId);
 };
 
 // ── Mock Tests (Unsolved Papers) ─────────────────────────────
@@ -341,85 +596,79 @@ export const addMockTest = (data) => {
   syncExports(); notify(); 
   return item;
 };
+
 export const updateMockTest = (id, data) => {
   _mockTests = _mockTests.map(m => m.id === id ? { ...m, ...data } : m); 
   save('pak_mock_tests', _mockTests); 
   syncExports(); notify();
 };
+
 export const deleteMockTest = (id) => {
   _mockTests = _mockTests.filter(m => m.id !== id); 
   save('pak_mock_tests', _mockTests); 
   syncExports(); notify();
 };
 
-// ── Books ─────────────────────────────────────────────────────
-export const addBook = (data) => {
-  const item = { ...data, id: `book_${_nextId.book++}` };
-  _books = [..._books, item]; save('pak_books', _books); save('pak_nextId', _nextId); syncExports(); notify(); return item;
-};
-export const updateBook = (id, data) => {
-  _books = _books.map(b => b.id === id ? { ...b, ...data } : b); save('pak_books', _books); syncExports(); notify();
-};
-export const deleteBook = (id) => {
-  _books = _books.filter(b => b.id !== id); save('pak_books', _books); syncExports(); notify();
-};
-
-// ── MCQs ──────────────────────────────────────────────────────
-export const addMcq = (data) => {
-  const item = { ...data, id: `mcq_${_nextId.mcq++}` };
-  _mcqs = [..._mcqs, item]; save('pak_mcqs', _mcqs); save('pak_nextId', _nextId); syncExports(); notify(); return item;
-};
-export const updateMcq = (id, data) => {
-  _mcqs = _mcqs.map(m => m.id === id ? { ...m, ...data } : m); save('pak_mcqs', _mcqs); syncExports(); notify();
-};
-export const deleteMcq = (id) => {
-  _mcqs = _mcqs.filter(m => m.id !== id); save('pak_mcqs', _mcqs); syncExports(); notify();
+export const getMockTestsForPosition = (positionId) => {
+  return _mockTests.filter(m => m.positionId === positionId);
 };
 
 // ── Test Patterns ─────────────────────────────────────────────
 export const addPattern = (data) => {
   const item = { ...data, id: `tp_${_nextId.pattern++}` };
-  _testPatterns = [..._testPatterns, item]; save('pak_patterns', _testPatterns); save('pak_nextId', _nextId); syncExports(); notify(); return item;
+  _testPatterns = [..._testPatterns, item]; 
+  save('pak_patterns', _testPatterns); 
+  save('pak_nextId', _nextId); 
+  syncExports(); notify(); 
+  return item;
 };
+
 export const updatePattern = (id, data) => {
-  _testPatterns = _testPatterns.map(p => p.id === id ? { ...p, ...data } : p); save('pak_patterns', _testPatterns); syncExports(); notify();
+  _testPatterns = _testPatterns.map(p => p.id === id ? { ...p, ...data } : p); 
+  save('pak_patterns', _testPatterns); 
+  syncExports(); notify();
 };
+
 export const deletePattern = (id) => {
-  _testPatterns = _testPatterns.filter(p => p.id !== id); save('pak_patterns', _testPatterns); syncExports(); notify();
+  _testPatterns = _testPatterns.filter(p => p.id !== id); 
+  save('pak_patterns', _testPatterns); 
+  syncExports(); notify();
+};
+
+export const getPatternForPosition = (positionId) => {
+  return _testPatterns.find(p => p.positionId === positionId);
 };
 
 // ── Reset ─────────────────────────────────────────────────────
 export const resetAllData = () => {
-  _categories = defaultCategories; _categoryPositions = defaultCategoryPositions;
-  _positions = defaultPositions; _papers = defaultPapers;
-  _mockTests = defaultMockTests; _books = defaultBooks; 
-  _mcqs = defaultMcqs; _testPatterns = defaultTestPatterns;
-  _nextId = { cat: 300, pos: 300, paper: 300, book: 300, mcq: 300, pattern: 300, mock: 300 };
-  ['pak_categories','pak_cat_positions','pak_positions','pak_papers','pak_mock_tests','pak_books','pak_mcqs','pak_patterns','pak_nextId']
+  _categories = defaultCategories; 
+  _categoryPositions = defaultCategoryPositions;
+  _positions = defaultPositions; 
+  _papers = defaultPapers;
+  _mockTests = defaultMockTests; 
+  _books = defaultBooks; 
+  _subjects = defaultSubjects;
+  _chapters = defaultChapters;
+  _mcqs = defaultMcqs; 
+  _testPatterns = defaultTestPatterns;
+  _nextId = { cat: 300, pos: 300, paper: 300, book: 300, mcq: 300, pattern: 300, mock: 300, subject: 300, chapter: 300 };
+  ['pak_categories','pak_cat_positions','pak_positions','pak_papers','pak_mock_tests','pak_books','pak_subjects','pak_chapters','pak_mcqs','pak_patterns','pak_nextId']
     .forEach(k => localStorage.removeItem(k));
   syncExports(); notify();
 };
 
-// ── Helpers ───────────────────────────────────────────────────
-export const getPapersForJob    = (posId)  => _papers.filter(p => p.positionId === posId || p.jobId === posId);
-export const getMockTestsForJob = (posId)  => _mockTests.filter(m => m.positionId === posId || m.jobId === posId);
-export const getBooksForJob     = (posId)  => _books.filter(b => b.positionId === posId || b.jobId === posId);
-export const getPatternForJob   = (posId)  => _testPatterns.find(p => p.positionId === posId || p.jobId === posId);
-export const getMcqsForPaper    = (paperId)=> _mcqs.filter(m => m.paperId === paperId);
-export const getMcqsForBook     = (bookId) => _mcqs.filter(m => m.bookId === bookId);
-
-// ── Exports for React Context/Store ──────────────────────────
+// ── useStore Hook ─────────────────────────────────────────────
 export const useStore = {
-  getState: () => ({
-    categories: _categories,
-    positions: _positions,
-    categoryPositions: _categoryPositions,
-    papers: _papers,
-    mockTests: _mockTests,
-    books: _books,
-    mcqs: _mcqs,
-    testPatterns: _testPatterns,
-  }),
+  get categories() { return _categories; },
+  get positions() { return _positions; },
+  get categoryPositions() { return _categoryPositions; },
+  get papers() { return _papers; },
+  get mockTests() { return _mockTests; },
+  get books() { return _books; },
+  get subjects() { return _subjects; },
+  get chapters() { return _chapters; },
+  get mcqs() { return _mcqs; },
+  get testPatterns() { return _testPatterns; },
   subscribe: subscribe,
 };
 
@@ -431,6 +680,8 @@ export default {
   getPapers,
   getMockTests,
   getBooks,
+  getSubjects,
+  getChapters,
   getMcqs,
   getTestPatterns,
   addCategory,
@@ -439,29 +690,38 @@ export default {
   addPosition,
   updatePosition,
   deletePosition,
+  addSubject,
+  updateSubject,
+  deleteSubject,
+  addBook,
+  updateBook,
+  deleteBook,
+  addChapter,
+  updateChapter,
+  deleteChapter,
+  addMcq,
+  updateMcq,
+  deleteMcq,
   addPaper,
   updatePaper,
   deletePaper,
   addMockTest,
   updateMockTest,
   deleteMockTest,
-  addBook,
-  updateBook,
-  deleteBook,
-  addMcq,
-  updateMcq,
-  deleteMcq,
   addPattern,
   updatePattern,
   deletePattern,
   setCategoryPositions,
   getPositionsForCategory,
-  getPapersForJob,
-  getMockTestsForJob,
-  getBooksForJob,
-  getPatternForJob,
+  getSubjectsForPosition,
+  getBooksForSubject,
+  getChaptersForBook,
+  getMcqsForChapter,
   getMcqsForPaper,
-  getMcqsForBook,
+  getPapersForPosition,
+  getMockTestsForPosition,
+  getBooksForPosition,
+  getPatternForPosition,
   resetAllData,
   subscribe,
   useStore,

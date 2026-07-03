@@ -6,22 +6,15 @@ import './App.css';
 
 import Topbar from './pages/Topbar';
 import Dashboard from './pages/Dashboard';
-import CategoriesPage from './pages/CategoriesPage';
-import JobsPage from './pages/JobsPage';
-import JobDetailPage from './pages/JobDetailPage';
-import PapersPage from './pages/PapersPage';
-import PaperDetailPage from './pages/PaperDetailPage';
-// import BooksPage from './pages/BooksPage';
-import McqsPage from './pages/McqsPage';
-import PatternsPage from './pages/PatternsPage';
-import PositionsPage from './pages/PositionsPage';
-// import NotFoundPage from './pages/NotFoundPage';
-
-// Position specific pages
-import PositionSolvedPapersPage from './pages/PositionSolvedPapersPage';
-import PositionUnsolvedPapersPage from './pages/PositionUnsolvedPapersPage';
-import PositionBooksPage from './pages/PositionBooksPage';
-import PositionPatternsPage from './pages/PositionPatternsPage';
+import TestConductBodies from './pages/TestConductBodies';
+import Positions from './pages/Positions';
+import Subjects from './pages/Subjects';
+import Books from './pages/Books';
+import Chapters from './pages/Chapters';
+import MCQs from './pages/MCQs';
+import Patterns from './pages/Patterns';
+import Papers from './pages/Papers';
+import Jobs from './pages/Jobs';
 
 function App() {
   return (
@@ -35,26 +28,38 @@ function App() {
       <div className="admin-main-content">
         <Routes>
           {/* Main Routes */}
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Navigate to="/admin" />} />
           <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/categories" element={<CategoriesPage />} />
-          <Route path="/admin/jobs" element={<JobsPage />} />
-          <Route path="/admin/jobs/:jobId" element={<JobDetailPage />} />
-          <Route path="/admin/papers" element={<PapersPage />} />
-          <Route path="/admin/papers/:paperId" element={<PaperDetailPage />} />
-          {/* <Route path="/admin/books" element={<BooksPage />} /> */}
-          <Route path="/admin/mcqs" element={<McqsPage />} />
-          <Route path="/admin/patterns" element={<PatternsPage />} />
-          <Route path="/admin/positions" element={<PositionsPage />} />
-
-          {/* Position-specific routes - must come after /admin/positions */}
-          <Route path="/admin/position/:positionId/solved-papers" element={<PositionSolvedPapersPage />} />
-          <Route path="/admin/position/:positionId/unsolved-papers" element={<PositionUnsolvedPapersPage />} />
-          <Route path="/admin/position/:positionId/books" element={<PositionBooksPage />} />
-          <Route path="/admin/position/:positionId/patterns" element={<PositionPatternsPage />} />
+          
+          {/* Test Conduct Bodies */}
+          <Route path="/admin/test-conduct-bodies" element={<TestConductBodies />} />
+          
+          {/* Positions */}
+          <Route path="/admin/positions" element={<Positions />} />
+          
+          {/* Subjects */}
+          <Route path="/admin/subjects" element={<Subjects />} />
+          
+          {/* Books */}
+          <Route path="/admin/books" element={<Books />} />
+          
+          {/* Chapters */}
+          <Route path="/admin/chapters" element={<Chapters />} />
+          
+          {/* MCQs */}
+          <Route path="/admin/mcqs" element={<MCQs />} />
+          
+          {/* Patterns */}
+          <Route path="/admin/patterns" element={<Patterns />} />
+          
+          {/* Papers */}
+          <Route path="/admin/papers" element={<Papers />} />
+          
+          {/* Jobs */}
+          <Route path="/admin/jobs" element={<Jobs />} />
 
           {/* 404 Not Found - must be last */}
-          {/* <Route path="*" element={<NotFoundPage />} /> */}
+          <Route path="*" element={<Navigate to="/admin" />} />
         </Routes>
       </div>
     </Router>
