@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import {
   ScrollView,
   View,
@@ -11,43 +11,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
 import { F } from "../../constants/fonts";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "../../context/AuthProvider";
+import { getTestBodies } from "../../src/api/testBodiesApi";
 
 const { width } = Dimensions.get("window");
 
-const categories = [
-  { 
-    name: "PPSC", 
-    full: "Punjab Public Service Commission", 
-    category: "Finance",
-  },
-  { 
-    name: "FPSC", 
-    full: "Federal Public Service Commission", 
-    category: "Healthcare",
-  },
-  { 
-    name: "NTS", 
-    full: "National Testing Service", 
-    category: "Education",
-  },
-  { 
-    name: "CSS/PMS", 
-    full: "Competitive Civil Services", 
-    category: "Administration",
-  },
-  { 
-    name: "GAT", 
-    full: "Graduate Assessment Test", 
-    category: "General",
-  },
-  { 
-    name: "MCAT", 
-    full: "Medical College Admission Test", 
-    category: "Medical",
-  },
-];
+const mapTestBodiesToCategories = (items = []) =>
+  items.map((item) => ({
+    name: item.shortName || item.name || "Test Body",
+    full: item.fullName || item.description || item.name || "Test Body",
+    category: "All",
+  }));
 
 const circumference = 2 * Math.PI * 45;
 const dashOffset = circumference * 0.25;
@@ -67,8 +42,31 @@ const SparkleIcon = () => (
 
 export default function Index() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
+
+  const loadCategories = useCallback(async () => {
+    try {
+      setFetchLoading(true);
+      setFetchError("");
+      const data = await getTestBodies();
+      setCategories(mapTestBodiesToCategories(data));
+    } catch (error) {
+      setFetchError(error.message || "Unable to load test categories.");
+      setCategories([]);
+    } finally {
+      setFetchLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCategories();
+    }, [loadCategories]),
+  );
 
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 4);
 
@@ -209,7 +207,13 @@ export default function Index() {
         </View>
         
         <View style={styles.categoriesGrid}>
-          {displayedCategories.map((cat) => (
+          {fetchLoading ? (
+            <Text style={styles.categoryFull}>Loading test categories...</Text>
+          ) : fetchError ? (
+            <Text style={styles.categoryFull}>{fetchError}</Text>
+          ) : displayedCategories.length === 0 ? (
+            <Text style={styles.categoryFull}>No test categories found.</Text>
+          ) : displayedCategories.map((cat) => (
             <TouchableOpacity
               key={cat.name}
               style={styles.categoryCard}

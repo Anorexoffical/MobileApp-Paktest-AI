@@ -1,32 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Badge, Card, Row, Col, Table } from 'react-bootstrap';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFolder } from 'react-icons/fi';
 import { useStore } from '../hooks/useStore';
-import { addCategory, updateCategory, deleteCategory } from '../data/store';
 import { Link } from 'react-router-dom';
+import { getTestBodies, createTestBody, updateTestBody, deleteTestBody } from '../api/testBodiesApi';
 
 const TestConductBodies = () => {
-  const { categories, positions } = useStore();
+  const { positions } = useStore();
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', fullName: '', description: '', icon: '🏛️' });
   const [deleteId, setDeleteId] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadTestBodies = async () => {
+    try {
+      setLoading(true);
+      const data = await getTestBodies();
+      setCategories(data || []);
+    } catch (error) {
+      console.error(error);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTestBodies();
+  }, []);
 
   const filtered = categories.filter(c =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openAdd = () => { setEditing(null); setForm({ name: '', fullName: '', description: '', icon: '🏛️' }); setShowModal(true); };
-  const openEdit = (cat) => { setEditing(cat); setForm(cat); setShowModal(true); };
-  const handleSave = () => {
-    if (!form.name.trim()) return;
-    editing ? updateCategory(editing.id, form) : addCategory(form);
-    setShowModal(false);
+  const openEdit = (cat) => {
+    setEditing(cat);
+    setForm({
+      name: cat.name || cat.shortName || '',
+      fullName: cat.fullName || '',
+      description: cat.description || '',
+      icon: cat.icon || '🏛️',
+    });
+    setShowModal(true);
   };
-  const confirmDelete = () => {
-    if (deleteId) { deleteCategory(deleteId); setDeleteId(null); }
+  const handleSave = async () => {
+    if (!form.name.trim()) return;
+
+    try {
+      const payload = {
+        shortName: form.name.trim(),
+        fullName: form.fullName.trim() || form.name.trim(),
+        description: form.description.trim(),
+      };
+
+      if (editing) {
+        await updateTestBody(editing.id || editing.testBodyID, payload);
+      } else {
+        await createTestBody(payload);
+      }
+
+      setShowModal(false);
+      await loadTestBodies();
+    } catch (error) {
+      window.alert(error.message || 'Unable to save test body.');
+    }
+  };
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteTestBody(deleteId);
+      setDeleteId(null);
+      await loadTestBodies();
+    } catch (error) {
+      window.alert(error.message || 'Unable to delete test body.');
+    }
   };
 
   return (
@@ -80,7 +133,13 @@ const TestConductBodies = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-5">
+                    <h5 style={{ color: '#475569' }}>Loading test bodies...</h5>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-5">
                     <div style={{ fontSize: '3rem', marginBottom: 16 }}>🏛️</div>
@@ -92,9 +151,9 @@ const TestConductBodies = () => {
                 </tr>
               ) : (
                 filtered.map((cat, idx) => {
-                  const posCount = positions.filter(p => p.testConductBody === cat.id).length;
+                  const posCount = cat.positionsCount ?? positions.filter(p => p.testConductBody === cat.id).length;
                   return (
-                    <tr key={cat.id}>
+                    <tr key={cat.id || cat.testBodyID}>
                       <td style={{ padding: '12px 20px', color: '#94a3b8' }}>{idx + 1}</td>
                       <td style={{ padding: '12px 20px', fontSize: '1.5rem' }}>{cat.icon || '🏛️'}</td>
                       <td style={{ padding: '12px 20px', fontWeight: 600 }}>{cat.name}</td>
@@ -104,7 +163,7 @@ const TestConductBodies = () => {
                       </td>
                       <td style={{ padding: '12px 20px', textAlign: 'center' }}>
                         <div className="d-flex gap-2 justify-content-center">
-                          <Link to={`/admin/positions?body=${cat.id}`}>
+                          <Link to={`/admin/positions?body=${cat.id || cat.testBodyID}`}>
                             <Button variant="outline-info" size="sm" title="View Positions">
                               <FiFolder size={14} />
                             </Button>
@@ -112,7 +171,7 @@ const TestConductBodies = () => {
                           <Button variant="outline-warning" size="sm" onClick={() => openEdit(cat)}>
                             <FiEdit size={14} />
                           </Button>
-                          <Button variant="outline-danger" size="sm" onClick={() => setDeleteId(cat.id)}>
+                          <Button variant="outline-danger" size="sm" onClick={() => setDeleteId(cat.id || cat.testBodyID)}>
                             <FiTrash2 size={14} />
                           </Button>
                         </div>

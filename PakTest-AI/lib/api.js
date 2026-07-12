@@ -1,4 +1,15 @@
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const getApiBaseUrl = () => {
+  const rawBaseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:5000/api').trim();
+  const normalizedBaseUrl = rawBaseUrl.replace(/\/+$/, '');
+
+  if (normalizedBaseUrl.endsWith('/api')) {
+    return normalizedBaseUrl;
+  }
+
+  return `${normalizedBaseUrl}/api`;
+};
+
+const BASE_URL = getApiBaseUrl();
 
 const request = async (method, path, body, token) => {
   const headers = { "Content-Type": "application/json" };
