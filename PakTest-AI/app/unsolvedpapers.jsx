@@ -1,17 +1,13 @@
 import { useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
-  Dimensions,
+  View, Text, ScrollView, TouchableOpacity, TextInput,
+  StyleSheet, Dimensions, Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 import { F } from "../constants/fonts";
+import { useAuth } from "../context/AuthProvider";
 
 const { width } = Dimensions.get("window");
 const s = (n) => Math.round((width / 375) * n);
@@ -65,12 +61,19 @@ const unsolvedPapers = [
 // ── Main Component ──────────────────────────────────────
 export default function UnsolvedPapers() {
   const router = useRouter();
+  const { user } = useAuth();
   const [selectedYear, setSelectedYear] = useState("All Years");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const filtered = unsolvedPapers.filter((p) =>
     p.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleStartMock = () => {
+    if (!user) { setShowLoginModal(true); return; }
+    router.push("/Test");
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -143,7 +146,7 @@ export default function UnsolvedPapers() {
             </View>
             <View style={styles.cardFooter}>
               <Text style={styles.updateText}>48 mock tests available</Text>
-              <TouchableOpacity style={styles.startMockBtn} activeOpacity={0.8}>
+              <TouchableOpacity style={styles.startMockBtn} onPress={handleStartMock} activeOpacity={0.8}>
                 <Text style={styles.startMockBtnText}>Start Mock</Text>
                 <ArrowIcon />
               </TouchableOpacity>
@@ -167,12 +170,34 @@ export default function UnsolvedPapers() {
               </View>
               <Text style={styles.progressText}>3/5 Completed</Text>
             </View>
-            <TouchableOpacity style={styles.acceptBtn} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.acceptBtn} onPress={handleStartMock} activeOpacity={0.8}>
               <Text style={styles.acceptBtnText}>Accept Challenge →</Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+      {/* Login Required Modal */}
+      <Modal visible={showLoginModal} transparent animationType="slide" onRequestClose={() => setShowLoginModal(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowLoginModal(false)}>
+          <View style={styles.loginModal}>
+            <View style={styles.loginModalHandle} />
+            <View style={styles.loginModalIcon}>
+              <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+                <Path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z" fill="#1d5152" />
+              </Svg>
+            </View>
+            <Text style={styles.loginModalTitle}>Login Required</Text>
+            <Text style={styles.loginModalDesc}>You need to login to attempt unsolved papers and mock tests.</Text>
+            <TouchableOpacity style={styles.loginModalBtn} onPress={() => { setShowLoginModal(false); router.push("/login"); }} activeOpacity={0.8}>
+              <Text style={styles.loginModalBtnText}>Login to enjoy better experience</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowLoginModal(false)}>
+              <Text style={styles.loginModalCancel}>Maybe later</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -332,4 +357,26 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   acceptBtnText: { fontSize: 13, fontFamily: F.semiBold, color: "#ffffff" },
+
+  // Login Modal
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
+  loginModal: {
+    backgroundColor: "#ffffff", borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    padding: 28, paddingBottom: 40, alignItems: "center", gap: 12,
+  },
+  loginModalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "#e5e3e1", marginBottom: 8 },
+  loginModalIcon: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: "#f0f7f7", justifyContent: "center", alignItems: "center",
+    borderWidth: 1, borderColor: "#d5e0e0", marginBottom: 4,
+  },
+  loginModalTitle: { fontSize: 22, fontFamily: F.display, color: "#1a1a1a" },
+  loginModalDesc: { fontSize: 14, fontFamily: F.regular, color: "#6b7280", textAlign: "center", lineHeight: 22 },
+  loginModalBtn: {
+    width: "100%", backgroundColor: "#1d5152", borderRadius: 999,
+    paddingVertical: 15, alignItems: "center", marginTop: 4,
+    shadowColor: "#1d5152", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5,
+  },
+  loginModalBtnText: { fontSize: 15, fontFamily: F.bold, color: "#ffffff" },
+  loginModalCancel: { fontSize: 14, fontFamily: F.regular, color: "#6b7280", marginTop: 4 },
 });

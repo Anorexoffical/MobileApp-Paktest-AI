@@ -18,7 +18,7 @@ import { useRouter } from "expo-router";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
 import { F } from "../constants/fonts";
 import * as Haptics from 'expo-haptics';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthProvider';
 
 const { width } = Dimensions.get("window");
 const s = (n) => Math.round((width / 375) * n);
@@ -288,7 +288,9 @@ export default function CompleteProfile() {
         <View style={styles.header}>
           <View style={{ width: 40 }} />
           <Text style={styles.headerTitle}>Complete Profile</Text>
-          <View style={{ width: 40 }} />
+          <TouchableOpacity onPress={() => router.replace("/(tabs)")} style={styles.skipBtn}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.progressContainer}>
@@ -317,6 +319,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e5e3e1", backgroundColor: "#ffffff" },
   headerTitle: { fontSize: 17, fontFamily: F.semiBold, color: "#1a1a1a" },
+  skipBtn: { width: 40, alignItems: "flex-end" },
+  skipText: { fontSize: 14, fontFamily: F.semiBold, color: "#1d5152" },
   progressContainer: { paddingHorizontal: 24, paddingVertical: 20, backgroundColor: "#ffffff", borderBottomWidth: 1, borderBottomColor: "#f3f4f6" },
   progressBar: { height: 4, backgroundColor: "#e5e3e1", borderRadius: 2, overflow: "hidden", marginBottom: 12 },
   progressFill: { height: "100%", backgroundColor: "#1d5152", borderRadius: 2 },

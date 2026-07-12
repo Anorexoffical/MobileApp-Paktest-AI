@@ -11,8 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
 import { F } from "../../constants/fonts";
-import { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
+import { useAuth } from "../../context/AuthProvider";
 
 const { width } = Dimensions.get("window");
 
@@ -69,14 +69,6 @@ export default function Index() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [showAllCategories, setShowAllCategories] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
-    }
-  }, [user, loading]);
-
-  if (loading || !user) return null;
 
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 4);
 

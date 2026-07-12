@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthProvider";
-import { authClient } from "../lib/auth-client";
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator,
@@ -21,6 +20,13 @@ const LockIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
     <Rect x="3" y="11" width="18" height="11" rx="2" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <Path d="M7 11V7a5 5 0 0110 0v4" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const UserIcon = () => (
+  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <Path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <Circle cx="12" cy="7" r="4" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
@@ -50,178 +56,132 @@ const LogoIcon = () => (
   </Svg>
 );
 
-export default function Login() {
-  const router = useRouter();
-  const { login, loginWithGoogle } = useAuth();
+const CheckIcon = () => (
+  <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+    <Path d="M20 6L9 17l-5-5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
 
+export default function Signup() {
+  const router = useRouter();
+  const { signup, loginWithGoogle } = useAuth();
+
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [forgotScreen, setForgotScreen] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await loginWithGoogle(() => router.replace("/(tabs)"));
-    } catch (err) {
-      alert("Google sign-in failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async () => {
+  const handleSignup = async () => {
+    if (!fullName.trim()) return alert("Please enter your name");
     if (!email.trim()) return alert("Please enter your email");
-    if (!password) return alert("Please enter your password");
+    if (password.length < 8) return alert("Password must be at least 8 characters");
+    if (password !== confirmPassword) return alert("Passwords don't match");
+    if (!agreeTerms) return alert("Please accept Terms & Conditions");
 
     setLoading(true);
     try {
-      const res = await login(email.trim(), password);
+      const res = await signup(fullName.trim(), email.trim(), password);
       if (res?.error) {
-        alert(res.error.message || "Invalid credentials");
+        alert(res.error.message || "Signup failed");
         return;
       }
-      router.replace("/(tabs)");
+      router.replace("/completeprofile");
     } catch (err) {
-      alert("Login failed. Please check your credentials.");
+      alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!resetEmail.trim()) return alert("Please enter your email");
+  const handleGoogleSignup = async () => {
     setLoading(true);
     try {
-      await authClient.requestPasswordReset({ email: resetEmail.trim(), redirectTo: "paktest-ai://reset-password" });
-      alert("Password reset link sent to your email.");
-      setForgotScreen(false);
-      setResetEmail("");
+      await loginWithGoogle();
+      router.replace("/completeprofile");
     } catch (err) {
-      alert("Failed to send reset link. Please try again.");
+      alert("Google sign-up failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
-  if (forgotScreen) {
-    return (
-      <SafeAreaView style={styles.safe} edges={["top"]}>
-        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-            <TouchableOpacity style={styles.backBtn} onPress={() => setForgotScreen(false)}>
-              <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <Path d="M19 12H5M12 5l-7 7 7 7" stroke="#1d5152" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </Svg>
-            </TouchableOpacity>
-
-            <View style={styles.forgotBox}>
-              <View style={styles.forgotIconBox}>
-                <EmailIcon />
-              </View>
-              <Text style={styles.title}>Reset Password</Text>
-              <Text style={styles.subtitle}>Enter your email and we'll send you a reset link</Text>
-
-              <View style={styles.inputWrap}>
-                <View style={styles.iconLeft}><EmailIcon /></View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email address"
-                  placeholderTextColor="#9ca3af"
-                  value={resetEmail}
-                  onChangeText={setResetEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoFocus
-                />
-              </View>
-
-              <TouchableOpacity style={styles.primaryBtn} onPress={handleForgotPassword} activeOpacity={0.8} disabled={loading}>
-                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>Send Reset Link</Text>}
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => setForgotScreen(false)}>
-                <Text style={styles.linkText}>← Back to Login</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
             <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <Path d="M19 12H5M12 5l-7 7 7 7" stroke="#1d5152" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M18 6L6 18M6 6l12 12" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" />
             </Svg>
           </TouchableOpacity>
 
           <View style={styles.brand}>
             <LogoIcon />
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue your exam preparation</Text>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Start your exam preparation journey</Text>
           </View>
 
-          <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleLogin} activeOpacity={0.8} disabled={loading}>
+          <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleSignup} activeOpacity={0.8} disabled={loading}>
             <GoogleIcon />
             <Text style={styles.googleBtnText}>Continue with Google</Text>
           </TouchableOpacity>
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or continue with email</Text>
+            <Text style={styles.dividerText}>or sign up with email</Text>
             <View style={styles.dividerLine} />
           </View>
 
           <View style={styles.form}>
             <View style={styles.inputWrap}>
+              <View style={styles.iconLeft}><UserIcon /></View>
+              <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#9ca3af" value={fullName} onChangeText={setFullName} autoCapitalize="words" />
+            </View>
+
+            <View style={styles.inputWrap}>
               <View style={styles.iconLeft}><EmailIcon /></View>
-              <TextInput
-                style={styles.input}
-                placeholder="Email address"
-                placeholderTextColor="#9ca3af"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+              <TextInput style={styles.input} placeholder="Email address" placeholderTextColor="#9ca3af" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
             </View>
 
             <View style={styles.inputWrap}>
               <View style={styles.iconLeft}><LockIcon /></View>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#9ca3af"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
+              <TextInput style={styles.input} placeholder="Password (min 8 chars)" placeholderTextColor="#9ca3af" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} />
               <TouchableOpacity style={styles.iconRight} onPress={() => setShowPassword(!showPassword)}>
                 <EyeIcon show={showPassword} />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.forgotLink} onPress={() => setForgotScreen(true)}>
-              <Text style={styles.forgotLinkText}>Forgot password?</Text>
+            <View style={styles.inputWrap}>
+              <View style={styles.iconLeft}><LockIcon /></View>
+              <TextInput style={styles.input} placeholder="Confirm Password" placeholderTextColor="#9ca3af" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={!showConfirm} />
+              <TouchableOpacity style={styles.iconRight} onPress={() => setShowConfirm(!showConfirm)}>
+                <EyeIcon show={showConfirm} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.termsRow} onPress={() => setAgreeTerms(!agreeTerms)} activeOpacity={0.7}>
+              <View style={[styles.checkbox, agreeTerms && styles.checkboxActive]}>
+                {agreeTerms && <CheckIcon />}
+              </View>
+              <Text style={styles.termsText}>
+                I agree to the <Text style={styles.termsLink}>Terms & Conditions</Text>
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.primaryBtn} onPress={handleLogin} activeOpacity={0.8} disabled={loading}>
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>Sign In</Text>}
+            <TouchableOpacity style={styles.signupBtn} onPress={handleSignup} activeOpacity={0.8} disabled={loading}>
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.signupBtnText}>Create Account</Text>}
             </TouchableOpacity>
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => router.push("/signup")}>
-              <Text style={styles.footerLink}>Sign Up</Text>
+            <Text style={styles.footerText}>Already have an account?</Text>
+            <TouchableOpacity onPress={() => router.push("/login")}>
+              <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
 
@@ -234,12 +194,12 @@ export default function Login() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#f9f5ee" },
   container: { flex: 1 },
-  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 40, justifyContent: "center" },
-  backBtn: { width: 40, height: 40, justifyContent: "center", marginBottom: 8 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 40 },
+  closeBtn: { alignSelf: 'flex-end', padding: 4, marginBottom: 8 },
 
   brand: { alignItems: "center", marginBottom: 32, gap: 10 },
   title: { fontSize: 26, fontFamily: F.display, color: "#1a1a1a" },
-  subtitle: { fontSize: 14, fontFamily: F.regular, color: "#6b7280", textAlign: "center" },
+  subtitle: { fontSize: 14, fontFamily: F.regular, color: "#6b7280" },
 
   googleBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
@@ -254,7 +214,7 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: "#e5e3e1" },
   dividerText: { fontSize: 12, fontFamily: F.regular, color: "#9ca3af" },
 
-  form: { gap: 14, marginBottom: 28 },
+  form: { gap: 14, marginBottom: 24 },
   inputWrap: { position: "relative", justifyContent: "center" },
   iconLeft: { position: "absolute", left: 14, zIndex: 1 },
   iconRight: { position: "absolute", right: 14, zIndex: 1 },
@@ -265,27 +225,23 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "#e5e3e1",
   },
 
-  forgotLink: { alignSelf: "flex-end" },
-  forgotLinkText: { fontSize: 13, fontFamily: F.semiBold, color: "#1d5152" },
+  termsRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  checkbox: {
+    width: 20, height: 20, borderRadius: 6, borderWidth: 2,
+    borderColor: "#e5e3e1", justifyContent: "center", alignItems: "center", backgroundColor: "#fff",
+  },
+  checkboxActive: { backgroundColor: "#1d5152", borderColor: "#1d5152" },
+  termsText: { flex: 1, fontSize: 13, fontFamily: F.regular, color: "#4b5563" },
+  termsLink: { fontFamily: F.semiBold, color: "#1d5152" },
 
-  primaryBtn: {
+  signupBtn: {
     backgroundColor: "#1d5152", borderRadius: 999, paddingVertical: 15,
     alignItems: "center", justifyContent: "center",
     shadowColor: "#1d5152", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5,
   },
-  primaryBtnText: { fontSize: 16, fontFamily: F.bold, color: "#ffffff" },
+  signupBtnText: { fontSize: 16, fontFamily: F.bold, color: "#ffffff" },
 
   footer: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 6 },
   footerText: { fontSize: 14, fontFamily: F.regular, color: "#6b7280" },
   footerLink: { fontSize: 14, fontFamily: F.bold, color: "#1d5152" },
-
-  // Forgot password screen
-  backBtn: { width: 40, height: 40, justifyContent: "center", marginBottom: 32 },
-  forgotBox: { alignItems: "center", gap: 14 },
-  forgotIconBox: {
-    width: 68, height: 68, borderRadius: 34,
-    backgroundColor: "#f5f0ff", justifyContent: "center", alignItems: "center",
-    borderWidth: 1, borderColor: "#e5d9ff", marginBottom: 4,
-  },
-  linkText: { fontSize: 14, fontFamily: F.semiBold, color: "#1d5152", marginTop: 4 },
 });

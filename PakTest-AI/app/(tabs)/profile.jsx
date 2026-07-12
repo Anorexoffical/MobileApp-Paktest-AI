@@ -6,12 +6,15 @@ import {
   StyleSheet,
   FlatList,
   Dimensions,
+  Alert,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Svg, { Path, Circle, Rect, LinearGradient, Stop, Defs } from "react-native-svg";
 import { F } from "../../constants/fonts";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthProvider";
 
 const { width } = Dimensions.get("window");
 
@@ -132,6 +135,60 @@ const GradientCard = ({ children, style }) => (
 // ── Main Screen ────────────────────────────────────────
 export default function Profile() {
   const router = useRouter();
+  const { user, logout, getUserAvatar, getUserName } = useAuth();
+
+  const name = getUserName();
+  const email = user?.email || '';
+  const avatar = getUserAvatar();
+
+  const getUserInitials = () => {
+    if (!name || name === 'Aspirant') return 'A';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => logout(() => router.replace('/(tabs)')),
+      },
+    ]);
+  };
+
+  // ── Guest Screen ──────────────────────────────────────
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.guestHeader}>
+          <Text style={styles.guestHeaderTitle}>Profile</Text>
+        </View>
+        <View style={styles.guestContainer}>
+          <View style={styles.guestAvatarBox}>
+            <Svg width={48} height={48} viewBox="0 0 24 24" fill="none">
+              <Path d="M12 12C13.1 12 14.0417 11.6083 14.825 10.825C15.6083 10.0417 16 9.1 16 8C16 6.9 15.6083 5.95833 14.825 5.175C14.0417 4.39167 13.1 4 12 4C10.9 4 9.95833 4.39167 9.175 5.175C8.39167 5.95833 8 6.9 8 8C8 9.1 8.39167 10.0417 9.175 10.825C9.95833 11.6083 10.9 12 12 12ZM4 20V17.2C4 16.65 4.14167 16.1458 4.425 15.6875C4.70833 15.2292 5.08333 14.875 5.55 14.625C6.55 14.1083 7.5625 13.7083 8.5875 13.425C9.6125 13.1417 10.7333 13 12 13C13.2667 13 14.3875 13.1417 15.4125 13.425C16.4375 13.7083 17.45 14.1083 18.45 14.625C18.9167 14.875 19.2917 15.2292 19.575 15.6875C19.8583 16.1458 20 16.65 20 17.2V20H4Z" fill="#CAB3FF" />
+            </Svg>
+          </View>
+          <Text style={styles.guestTitle}>You're not logged in</Text>
+          <Text style={styles.guestSubtitle}>
+            Login to view your profile, track achievements, and monitor your exam progress.
+          </Text>
+          <TouchableOpacity style={styles.guestLoginBtn} onPress={() => router.push('/login')} activeOpacity={0.8}>
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+            <Text style={styles.guestLoginBtnText}>Login to enjoy better experience</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/signup')}>
+            <Text style={styles.guestSignupText}>Don't have an account? <Text style={styles.guestSignupLink}>Sign Up</Text></Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -141,14 +198,19 @@ export default function Profile() {
         <View style={styles.profileSection}>
           <View style={styles.profileBg}>
             <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarInitial}>A</Text>
-              </View>
+              {avatar ? (
+                <Image source={{ uri: avatar }} style={styles.avatarImage} />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarInitial}>{getUserInitials()}</Text>
+                </View>
+              )}
               <View style={styles.verifiedBadge}>
                 <CheckIcon />
               </View>
             </View>
-            <Text style={styles.profileName}>Aspirant Name</Text>
+            <Text style={styles.profileName}>{name}</Text>
+            {email ? <Text style={styles.profileEmail}>{email}</Text> : null}
             <View style={styles.levelBadge}>
               <Text style={styles.levelText}>🏆 Level 12 · Elite Prep</Text>
             </View>
@@ -331,7 +393,11 @@ export default function Profile() {
             <Text style={styles.menuItemText}>Help & Support</Text>
             <ChevronRight />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, styles.menuItemLogout]} activeOpacity={0.8}>
+          <TouchableOpacity 
+            style={[styles.menuItem, styles.menuItemLogout]} 
+            activeOpacity={0.8}
+            onPress={handleLogout}
+          >
             <View style={styles.menuIconBgLogout}><LogoutIcon /></View>
             <Text style={[styles.menuItemText, styles.menuItemTextLogout]}>Logout</Text>
             <ChevronRight />
@@ -348,6 +414,45 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#f9f5ee" },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 16, paddingBottom: 40 },
+
+  // Guest styles
+  guestHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e3e1',
+  },
+  guestHeaderTitle: { fontSize: 24, fontFamily: F.display, color: '#1a1a1a' },
+  guestContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    gap: 16,
+  },
+  guestAvatarBox: {
+    width: 88, height: 88, borderRadius: 44,
+    backgroundColor: '#f5f0ff',
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: '#e5d9ff',
+    marginBottom: 4,
+  },
+  guestTitle: { fontSize: 22, fontFamily: F.display, color: '#1a1a1a', textAlign: 'center' },
+  guestSubtitle: {
+    fontSize: 14, fontFamily: F.regular, color: '#6b7280',
+    textAlign: 'center', lineHeight: 22,
+  },
+  guestLoginBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#1d5152', borderRadius: 999,
+    paddingVertical: 14, paddingHorizontal: 24, marginTop: 4,
+    shadowColor: '#1d5152', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 10, elevation: 5,
+  },
+  guestLoginBtnText: { fontSize: 14, fontFamily: F.semiBold, color: '#ffffff' },
+  guestSignupText: { fontSize: 13, fontFamily: F.regular, color: '#6b7280' },
+  guestSignupLink: { fontFamily: F.bold, color: '#1d5152' },
 
   gradientWrapper: {
     position: 'relative',
@@ -397,6 +502,18 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 8,
   },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderColor: "#f9f5ee",
+    shadowColor: "#1d5152",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 8,
+  },
   avatarInitial: { fontSize: 38, fontFamily: F.bold, color: "#fff" },
   verifiedBadge: {
     position: "absolute", bottom: 2, right: 2,
@@ -412,7 +529,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  profileName: { fontSize: 26, fontFamily: F.display, color: "#1a1a1a", marginBottom: 4 },
+  profileName: { fontSize: 26, fontFamily: F.display, color: "#1a1a1a", marginBottom: 2 },
+  profileEmail: { fontSize: 14, fontFamily: F.regular, color: "#6b7280", marginBottom: 6 },
   levelBadge: { 
     backgroundColor: "#f9f5ee", 
     borderRadius: 999, 

@@ -1,9 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { F } from '../../constants/fonts';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthProvider';
 
 const { width } = Dimensions.get('window');
 const s = (n) => Math.round((width / 375) * n);
@@ -97,8 +98,36 @@ const StatsCard = ({ icon: Icon, label, value, color }) => (
 // ── Main Component ──────────────────────────────────────
 export default function YourTest() {
   const router = useRouter();
+  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // Guest screen
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Your Tests</Text>
+        </View>
+        <View style={styles.guestContainer}>
+          <View style={styles.guestIconBox}>
+            <Svg width={48} height={48} viewBox="0 0 24 24" fill="none">
+              <Path d="M4 4H14L20 10V20C20 21.1 19.1 22 18 22H4C2.9 22 2 21.1 2 20V6C2 4.9 2.9 4 4 4ZM13 5.5V11H18.5L13 5.5ZM7 13V15H17V13H7ZM7 17V19H14V17H7Z" fill="#CAB3FF" />
+            </Svg>
+          </View>
+          <Text style={styles.guestTitle}>Your tests will appear here</Text>
+          <Text style={styles.guestSubtitle}>
+            Login to track your progress, resume tests, and see your results.
+          </Text>
+          <TouchableOpacity style={styles.guestBtn} onPress={() => router.push('/login')} activeOpacity={0.8}>
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+            <Text style={styles.guestBtnText}>Login to enjoy better experience</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const filteredTests = TESTS.filter(test => {
     if (activeFilter === 'All') return true;
@@ -266,6 +295,57 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
+  },
+  guestContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: s(32),
+    gap: s(16),
+  },
+  guestIconBox: {
+    width: s(88),
+    height: s(88),
+    borderRadius: s(24),
+    backgroundColor: '#f5f0ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5d9ff',
+    marginBottom: s(4),
+  },
+  guestTitle: {
+    fontSize: s(20),
+    fontFamily: F.display,
+    color: '#1a1a1a',
+    textAlign: 'center',
+  },
+  guestSubtitle: {
+    fontSize: s(14),
+    fontFamily: F.regular,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: s(22),
+  },
+  guestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(8),
+    backgroundColor: '#1d5152',
+    borderRadius: s(999),
+    paddingVertical: s(14),
+    paddingHorizontal: s(24),
+    marginTop: s(4),
+    shadowColor: '#1d5152',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  guestBtnText: {
+    fontSize: s(14),
+    fontFamily: F.semiBold,
+    color: '#ffffff',
   },
   headerTitle: { fontSize: s(24), fontFamily: F.display, color: '#1a1a1a' },
   headerSub: { fontSize: s(13), fontFamily: F.regular, color: '#6b7280', marginTop: s(2) },
