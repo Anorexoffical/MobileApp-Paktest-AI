@@ -18,6 +18,7 @@ datasource db {
 // One TestConductBody → Many Positions
 // One TestConductBody → Many JobPosts
 // ============================================================
+
 model TestConductBody {
   testBodyID  Int     @id @default(autoincrement())
   shortName   String  @db.VarChar(50)
@@ -39,6 +40,7 @@ model TestConductBody {
 // One Position → Many TestPatterns
 // One TestConductBody → Many Positions (FK: testBodyID)
 // ============================================================
+
 model Position {
   positionID    Int     @id @default(autoincrement())
   positionTitle String  @db.VarChar(200)
@@ -65,6 +67,7 @@ model Position {
 // Many JobPosts → One TestConductBody (FK: testConductBodyID)
 // Many JobPosts → One Position (FK: positionID)
 // ============================================================
+
 model JobPost {
   jobPostID    Int     @id @default(autoincrement())
   jobTitle     String  @db.VarChar(200)
@@ -89,6 +92,7 @@ model JobPost {
 // Paper
 // Many Papers → One Position (FK: jobPositionID)
 // ============================================================
+
 model Paper {
   paperID     Int     @id @default(autoincrement())
   paperTitle  String  @db.VarChar(300)
@@ -112,6 +116,7 @@ model Paper {
 // One Subject   → Many Books   (reverse)
 // One Subject   → Many MCQs    (via BookChapter)
 // ============================================================
+
 model Subject {
   subjectID   Int     @id @default(autoincrement())
   name        String  @db.VarChar(200)
@@ -139,6 +144,7 @@ model Subject {
 //  keeping bookID on Subject as the owning FK, Book has no FK
 //  back to Subject to avoid circular dependency)
 // ============================================================
+
 model Book {
   bookID      Int     @id @default(autoincrement())
   bookName    String  @db.VarChar(300)
@@ -158,6 +164,7 @@ model Book {
 // Many BookChapters → One Subject (FK: subjectID) — added for clarity
 // One BookChapter   → Many MCQs
 // ============================================================
+
 model BookChapter {
   chapterID   Int    @id @default(autoincrement())
   chapterName String @db.VarChar(300)
@@ -180,6 +187,7 @@ model BookChapter {
 // MCQS
 // Many MCQs → One BookChapter (FK: chapterID)
 // ============================================================
+
 model MCQS {
   mcqsID        Int     @id @default(autoincrement())
   question      String  @db.Text
@@ -200,6 +208,7 @@ model MCQS {
 // TestPattern
 // Many TestPatterns → One Position (FK: positionID)
 // ============================================================
+
 model TestPattern {
   testPatternID Int  @id @default(autoincrement())
   totalMcqs     Int
@@ -219,15 +228,25 @@ model TestPattern {
 // User
 // One User → One UserPersonalized (1-to-1)
 // ============================================================
+
 model User {
-  userID   Int     @id @default(autoincrement())
-  userName String  @unique @db.VarChar(100)
-  password String  @db.VarChar(255) // store hashed password
-  role     String  @db.VarChar(50) // e.g. "admin", "user", "candidate"
-  authID   String? @unique @db.VarChar(255) // for OAuth / external auth token
+  id       String  @id @default(cuid())
+  userName String? @unique @db.VarChar(100)
+  password String? @db.VarChar(255)
+  role     String  @default("user") @db.VarChar(50)
+  authID   String? @unique @db.VarChar(255)
+
+  name          String    @db.Text
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations
   userPersonalized UserPersonalized?
+  sessions         Session[]
+  accounts         Account[]
 
   @@map("users")
 }
@@ -236,6 +255,7 @@ model User {
 // UserPersonalized
 // One UserPersonalized → One User (FK: userID)
 // ============================================================
+
 model UserPersonalized {
   userPersonalizedID Int     @id @default(autoincrement())
   educationalBg      String? @db.Text
@@ -244,8 +264,56 @@ model UserPersonalized {
   yearsOfExperience  Int?
 
   // FK → User (1-to-1)
-  userID Int  @unique
-  user   User @relation(fields: [userID], references: [userID])
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 
   @@map("user_personalized")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?  @db.Text
+  userAgent String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId(length: 191)])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @db.Text
+  providerId            String    @db.Text
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId(length: 191)])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier(length: 191)])
+  @@map("verification")
 }
